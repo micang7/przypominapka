@@ -16,10 +16,14 @@ export default tseslint.config(
       },
     },
     rules: {
-      'no-console': ['warn', { allow: ['log', 'warn', 'error'] }],
+      'no-console': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/consistent-type-imports': 'error',
       'prefer-const': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_' },
+      ],
     },
   },
 
