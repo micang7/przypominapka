@@ -1,10 +1,12 @@
-import { z } from 'zod';
+import { z } from '../../extendedZod.js';
 import { ErrorResDto } from './error.res.dto.js';
 
 export const ValidationError = z.object({
-  path: z.string(),
-  code: z.string(),
-  error: z.string(),
+  path: z.string().openapi({ example: 'login' }),
+  code: z.string().openapi({ example: 'too_short' }),
+  error: z
+    .string()
+    .openapi({ example: 'String must contain at least 3 character(s)' }),
 });
 
 export const ValidationErrorResDto = ErrorResDto.extend({

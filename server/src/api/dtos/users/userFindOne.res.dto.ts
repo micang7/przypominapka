@@ -1,8 +1,8 @@
-import { z } from 'zod';
+import { z } from '../../extendedZod.js';
 
 export const UserFindOneResDto = z.object({
-  id: z.number().int(),
-  login: z.string(),
+  id: z.number().int().openapi({ example: 1 }),
+  login: z.string().openapi({ example: 'login' }),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
