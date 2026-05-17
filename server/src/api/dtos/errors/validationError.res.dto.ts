@@ -9,6 +9,8 @@ export const ValidationError = z.object({
     .openapi({ example: 'String must contain at least 3 character(s)' }),
 });
 
+export type ValidationErrorType = z.infer<typeof ValidationError>;
+
 export const ValidationErrorResDto = ErrorResDto.extend({
   validationErrors: z.array(ValidationError),
 });
