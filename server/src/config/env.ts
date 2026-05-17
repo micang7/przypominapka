@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import type { StringValue } from 'ms';
 import { z } from 'zod';
 
 const envSchema = z.object({
@@ -14,6 +15,10 @@ const envSchema = z.object({
   POSTGRES_DB: z.string(),
   POSTGRES_USER: z.string(),
   POSTGRES_PASSWORD: z.string(),
+  JWT_SECRET: z.string(),
+  JWT_REFRESH_SECRET: z.string(),
+  JWT_EXPIRES_IN: z.string() as z.ZodType<StringValue>,
+  JWT_REFRESH_EXPIRES_IN: z.string() as z.ZodType<StringValue>,
 });
 
 export const env = envSchema.parse(process.env);
