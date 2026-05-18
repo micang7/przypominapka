@@ -10,7 +10,8 @@
     "lint": "eslint \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\"",
     "db:gn": "drizzle-kit generate",
-    "db:mg": "drizzle-kit migrate"
+    "db:mg": "drizzle-kit migrate",
+    "migrate": "cross-env NODE_ENV=production node dist/db/scripts/migrate.js"
   },
   "keywords": [],
   "author": "",
