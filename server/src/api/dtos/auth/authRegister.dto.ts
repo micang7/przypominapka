@@ -14,6 +14,7 @@ export const AuthRegisterDto = z
     message: 'Passwords do not match',
     path: ['confirmPassword'],
     params: { subCode: 'password_mismatch' },
-  });
+  })
+  .transform(({ confirmPassword: _, ...data }) => data);
 
 export type AuthRegisterDtoType = z.infer<typeof AuthRegisterDto>;
