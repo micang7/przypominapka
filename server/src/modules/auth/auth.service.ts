@@ -6,12 +6,12 @@ import type { AuthRegisterDtoType } from '../../api/dtos/auth/authRegister.dto.j
 import type { AuthRegisterResDtoType } from '../../api/dtos/auth/authRegister.res.dto.js';
 import { generateTokens } from '../../utils/generateTokens.js';
 import { isDbError, DbError } from '../../utils/isDbError.js';
-import { logger } from '../../config/logger.js';
+import { appLogger } from '../../config/logger.js';
 import { assertExists } from '../../utils/assertExists.js';
 
 class AuthService {
   async register(data: AuthRegisterDtoType): Promise<AuthRegisterResDtoType> {
-    logger.debug({ login: data.login }, 'Registration initiated');
+    appLogger.debug({ login: data.login }, 'Registration initiated');
 
     const passwordHash = await hash(data.password);
 
@@ -28,7 +28,7 @@ class AuthService {
 
       const tokens = await generateTokens(newUser.id);
 
-      logger.info(
+      appLogger.info(
         { userId: newUser.id, login: newUser.login },
         'Registration completed',
       );
@@ -44,7 +44,7 @@ class AuthService {
       };
     } catch (error) {
       if (isDbError(error, DbError.UniqueViolation)) {
-        logger.warn(
+        appLogger.warn(
           { login: data.login },
           'Registration blocked (login already in use)',
         );

@@ -3,8 +3,8 @@ import swaggerUi from 'swagger-ui-express';
 import { openApiDocument } from './api/openApi.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { NotFoundError } from './utils/appErrors.js';
-import { logger } from './config/logger.js';
-import { httpLogger } from './config/httpLogger.js';
+import { appLogger } from './config/logger.js';
+import { reqLogger } from './config/httpLogger.js';
 import { createExpressEndpoints } from '@ts-rest/express';
 import { apiContract } from './api/apiContract.js';
 import { router } from './router.js';
@@ -13,7 +13,7 @@ export const app = express();
 
 app.use(express.json());
 
-app.use(httpLogger);
+app.use(reqLogger);
 
 createExpressEndpoints(apiContract, router, app);
 
@@ -25,12 +25,12 @@ app.use((_req, _res, next) => next(new NotFoundError()));
 
 app.use(errorHandler);
 
-process.on('uncaughtException', (err: Error) => {
-  logger.error(`Uncaught Exception: ${err.message}`);
+process.on('uncaughtException', (error) => {
+  appLogger.error({ error }, 'Uncaught Exception');
   process.exit(1);
 });
 
-process.on('unhandledRejection', (err: Error) => {
-  logger.error(`Unhandled Promise Rejection: ${err.message}`);
+process.on('unhandledRejection', (error) => {
+  appLogger.error({ error }, 'Unhandled Promise Rejection');
   process.exit(1);
 });

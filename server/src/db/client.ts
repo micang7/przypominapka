@@ -18,9 +18,6 @@ const client = postgres({
   connect_timeout: 5,
 });
 
-export const db = drizzle(client, {
-  schema,
-  logger: env.NODE_ENV === 'development',
-});
+export const db = drizzle(client, { schema });
 
 export type DbClient = typeof db;
