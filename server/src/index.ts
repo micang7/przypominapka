@@ -1,7 +1,18 @@
 import { app } from './app.js';
 import { env } from './config/env.js';
-import { logger } from './config/logger.js';
+import { appLogger } from './config/logger.js';
+import { checkDbConnWithRetry } from './db/client.js';
 
-app.listen(env.PORT, () => {
-  logger.info(`Server running on port ${env.PORT}`);
-});
+async function bootstrap() {
+  try {
+    await checkDbConnWithRetry();
+
+    app.listen(env.PORT, () => {
+      appLogger.info(`Server running on port ${env.PORT}`);
+    });
+  } catch (error) {
+    appLogger.fatal({ error }, 'Database connection failed');
+    process.exit(1);
+  }
+}
+await bootstrap();
