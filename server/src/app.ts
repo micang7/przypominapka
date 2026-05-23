@@ -2,7 +2,7 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { openApiDocument } from './api/openApi.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { NotFoundError } from './utils/appErrors.js';
+import { BadRequestError, NotFoundError } from './utils/appErrors.js';
 import { appLogger } from './config/logger.js';
 import { reqLogger } from './config/httpLogger.js';
 import { createExpressEndpoints } from '@ts-rest/express';
@@ -15,7 +15,28 @@ app.use(express.json());
 
 app.use(reqLogger);
 
-createExpressEndpoints(apiContract, router, app);
+createExpressEndpoints(apiContract, router, app, {
+  requestValidationErrorHandler(err, _req, _res, next) {
+    const errors = [
+      ...(err.pathParams?.issues ?? []).map((issue) => ({
+        path: `params.${issue.path.join('.')}`,
+        code: issue.code,
+        error: issue.message,
+      })),
+      ...(err.query?.issues ?? []).map((issue) => ({
+        path: `query.${issue.path.join('.')}`,
+        code: issue.code,
+        error: issue.message,
+      })),
+      ...(err.body?.issues ?? []).map((issue) => ({
+        path: `body.${issue.path.join('.')}`,
+        code: issue.code,
+        error: issue.message,
+      })),
+    ];
+    next(new BadRequestError(errors));
+  },
+});
 
 app.use('/api/v1/docs/ui', swaggerUi.serve, swaggerUi.setup(openApiDocument));
 

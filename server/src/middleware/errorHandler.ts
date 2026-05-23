@@ -1,14 +1,14 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { AppError } from '../utils/appErrors.js';
+import { AppError } from '../utils/appErrors.js';
 import { appLogger } from '../config/logger.js';
 
 export function errorHandler(
-  err: AppError,
+  err: unknown,
   _req: Request,
   res: Response,
   _next: NextFunction,
 ) {
-  if (err.isOperational) {
+  if (err instanceof AppError) {
     res.status(err.statusCode).json({
       message: err.message,
       ...(err.errors && { errors: err.errors }),
