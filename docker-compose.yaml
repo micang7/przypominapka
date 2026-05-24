@@ -17,7 +17,18 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/data
+
+  db_test:
+    container_name: postgres_db_test
+    image: postgres:16
+    profiles: ["test"]
+    env_file:
+      - ./server/.env.test
+    ports:
+      - "5434:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
 
 volumes:
   postgres_data:

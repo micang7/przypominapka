@@ -11,6 +11,7 @@ export class AppError extends Error {
 
     Object.setPrototypeOf(this, new.target.prototype);
 
+    /* c8 ignore next */
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
     }

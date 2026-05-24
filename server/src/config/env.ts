@@ -1,4 +1,8 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({
+  path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
+  override: true,
+});
 import type { StringValue } from 'ms';
 import pino from 'pino';
 import { z } from 'zod';
