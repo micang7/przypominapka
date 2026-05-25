@@ -5,20 +5,12 @@ import * as schema from './schema.js';
 import { appLogger } from '../config/logger.js';
 import { sql } from 'drizzle-orm';
 
-export const dbConnOptions = {
-  host: env.POSTGRES_HOST,
-  port: env.POSTGRES_PORT,
-  user: env.POSTGRES_USER,
-  password: env.POSTGRES_PASSWORD,
-  database: env.POSTGRES_DB,
-  onnotice: () => {},
-};
-
-const client = postgres({
-  ...dbConnOptions,
+const client = postgres(env.DATABASE_URL, {
   max: 10,
   idle_timeout: 10,
-  connect_timeout: 5,
+  connect_timeout: 15,
+  ssl: env.DATABASE_URL.includes('sslmode=require') ? 'require' : false,
+  onnotice: () => {},
 });
 
 export const db = drizzle(client, { schema });
