@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'app_router.dart';
+part of 'api_client.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,43 +9,43 @@ part of 'app_router.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(appRouter)
-final appRouterProvider = AppRouterProvider._();
+@ProviderFor(apiClient)
+final apiClientProvider = ApiClientProvider._();
 
-final class AppRouterProvider
-    extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
-    with $Provider<GoRouter> {
-  AppRouterProvider._()
+final class ApiClientProvider
+    extends $FunctionalProvider<ApiClient, ApiClient, ApiClient>
+    with $Provider<ApiClient> {
+  ApiClientProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'appRouterProvider',
+        name: r'apiClientProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$appRouterHash();
+  String debugGetCreateSourceHash() => _$apiClientHash();
 
   @$internal
   @override
-  $ProviderElement<GoRouter> $createElement($ProviderPointer pointer) =>
+  $ProviderElement<ApiClient> $createElement($ProviderPointer pointer) =>
       $ProviderElement(pointer);
 
   @override
-  GoRouter create(Ref ref) {
-    return appRouter(ref);
+  ApiClient create(Ref ref) {
+    return apiClient(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(GoRouter value) {
+  Override overrideWithValue(ApiClient value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<GoRouter>(value),
+      providerOverride: $SyncValueProvider<ApiClient>(value),
     );
   }
 }
 
-String _$appRouterHash() => r'90ffff1bcb642ef9c0049fd7beb17e817ae3721f';
+String _$apiClientHash() => r'7b0bdd94e38c51136d81038d02c9ad65184c5db1';

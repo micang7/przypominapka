@@ -1,0 +1,106 @@
+import 'package:dio/dio.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:app/core/http/http_config.dart';
+import 'models/auth_models.dart';
+import 'models/task_models.dart';
+
+part 'api_client.g.dart';
+
+class ApiClient {
+  final Dio _dio;
+
+  ApiClient(this._dio) {
+    _auth = AuthNamespace(_dio);
+    _users = UsersNamespace(_dio);
+    _sync = SyncNamespace(_dio);
+  }
+
+  late final AuthNamespace _auth;
+  late final UsersNamespace _users;
+  late final SyncNamespace _sync;
+
+  AuthNamespace get auth => _auth;
+  UsersNamespace get users => _users;
+  SyncNamespace get sync => _sync;
+
+  void setToken(String token) {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
+  }
+
+  void clearToken() {
+    _dio.options.headers.remove('Authorization');
+  }
+}
+
+class AuthNamespace {
+  final Dio _dio;
+  AuthNamespace(this._dio);
+
+  Future<AuthResponse> login(LoginRequest request) async {
+    final response = await _dio.post('/auth/login', data: request.toJson());
+    return AuthResponse.fromJson(response.data);
+  }
+
+  Future<AuthResponse> register(RegisterRequest request) async {
+    final response = await _dio.post('/auth/register', data: request.toJson());
+    return AuthResponse.fromJson(response.data);
+  }
+
+  Future<void> logout(String refreshToken) async {
+    await _dio.post(
+      '/auth/logout',
+      options: Options(headers: {'x-refresh-token': refreshToken}),
+    );
+  }
+
+  Future<AuthResponse> refresh(String refreshToken) async {
+    final response = await _dio.post(
+      '/auth/refresh',
+      options: Options(headers: {'x-refresh-token': refreshToken}),
+    );
+    return AuthResponse.fromJson(response.data);
+  }
+}
+
+class UsersNamespace {
+  final Dio _dio;
+  UsersNamespace(this._dio);
+
+  Future<UserDto> getMe() async {
+    final response = await _dio.get('/users/me');
+    return UserDto.fromJson(response.data);
+  }
+
+  Future<void> deleteMe() async {
+    await _dio.delete('/users/me');
+  }
+}
+
+class SyncNamespace {
+  final Dio _dio;
+  SyncNamespace(this._dio);
+
+  Future<SyncResponse> sync(SyncRequest request) async {
+    final response = await _dio.post('/sync', data: request.toJson());
+    return SyncResponse.fromJson(response.data);
+  }
+}
+
+@riverpod
+ApiClient apiClient(Ref ref) {
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: HttpConfig.baseUrl,
+      connectTimeout: HttpConfig.connectionTimeout,
+      receiveTimeout: HttpConfig.receiveTimeout,
+      contentType: 'application/json',
+    ),
+  );
+
+  dio.interceptors.add(LogInterceptor(
+    requestBody: true,
+    responseBody: true,
+  ));
+
+  return ApiClient(dio);
+}
