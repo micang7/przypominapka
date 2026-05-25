@@ -13,7 +13,8 @@ void main() {
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
-    Widget build(BuildContext context, WidgetRef ref) {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     // Odczytujemy konfigurację naszego routera z providera
     final goRouter = ref.watch(appRouterProvider);
 

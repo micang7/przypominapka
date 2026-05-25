@@ -10,20 +10,20 @@ part 'app_router.g.dart';
 @riverpod
 GoRouter appRouter(Ref ref) {
   return GoRouter(
-    initialLocation: '`/login`', // Zaczynamy od logowania
+    initialLocation: '/login',
     routes: [
       GoRoute(
-        path: '`/login`',
+        path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: '`/register`',
+        path: '/register',
         name: 'register',
         builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
-        path: '`/home`', // Ścieżka home zmieniona na /home
+        path: '/home',
         name: 'home',
         builder: (context, state) => Scaffold(
           appBar: AppBar(title: const Text('Przypominapka')),
