@@ -1,6 +1,6 @@
 import { hash, verify } from 'argon2';
 import { db } from '../../db/client.js';
-import { users } from '../../db/schema.js';
+import { sessions, users } from '../../db/schema.js';
 import { ConflictError, UnauthorizedError } from '../../utils/appErrors.js';
 import type { AuthRegisterDtoType } from '../../api/dtos/auth/authRegister.dto.js';
 import type { AuthRegisterResDtoType } from '../../api/dtos/auth/authRegister.res.dto.js';
@@ -85,6 +85,46 @@ class AuthService {
       },
       ...tokens,
     };
+  }
+
+  async logout(userId: number, refreshToken: string): Promise<void> {
+    appLogger.debug({ userId }, 'Logout initiated');
+
+    const userSessions = await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.userId, userId));
+
+    appLogger.debug(
+      { userId, sessions: userSessions.length },
+      'User sessions found',
+    );
+
+    let sessionIdToDelete = null;
+
+    for (const session of userSessions) {
+      const isMatch = await verify(session.tokenHash, refreshToken);
+      if (isMatch) {
+        sessionIdToDelete = session.id;
+        break;
+      }
+    }
+
+    appLogger.debug(
+      { userId, sessionId: sessionIdToDelete },
+      'Matching session found',
+    );
+
+    if (sessionIdToDelete) {
+      await db.delete(sessions).where(eq(sessions.id, sessionIdToDelete));
+
+      appLogger.info(
+        { userId, sessionId: sessionIdToDelete },
+        'User current session invalidated',
+      );
+    } else {
+      appLogger.warn({ userId }, 'No matching session was found');
+    }
   }
 }
 

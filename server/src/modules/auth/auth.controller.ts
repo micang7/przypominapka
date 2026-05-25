@@ -1,6 +1,7 @@
 import { s } from '../../config/tsRestServer.js';
 import { apiContract } from '../../api/apiContract.js';
 import { authService } from './auth.service.js';
+import { UnauthorizedError } from '../../utils/appErrors.js';
 
 export const authController = s.router(apiContract.auth, {
   register: async ({ body }) => {
@@ -17,9 +18,19 @@ export const authController = s.router(apiContract.auth, {
       body: result,
     };
   },
-  logout: async () => {
-    await Promise.resolve();
-    return { status: 204, body: undefined };
+  logout: async ({ headers, req }) => {
+    const userId = req.userId!;
+    const refreshToken = headers['x-refresh-token'];
+
+    if (!refreshToken) {
+      throw new UnauthorizedError('Missing refresh token header for logout');
+    }
+    await authService.logout(userId, refreshToken);
+
+    return {
+      status: 204,
+      body: undefined,
+    };
   },
   refresh: async () => {
     await Promise.resolve();

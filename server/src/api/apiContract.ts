@@ -9,6 +9,7 @@ import { AuthRefreshResDto } from './dtos/auth/authRefresh.res.dto.js';
 import { UserFindOneResDto } from './dtos/users/userFindOne.res.dto.js';
 import { SyncResDto } from './dtos/sync/sync.res.dto.js';
 import { SyncDto } from './dtos/sync/sync.dto.js';
+import z from 'zod';
 
 const c = initContract();
 
@@ -49,18 +50,19 @@ export const apiContract = c.router(
           500: ErrorResDto,
         },
         body: c.noBody(),
+        headers: z.object({ 'x-refresh-token': z.string().min(1) }),
         summary: 'Wylogowanie i unieważnienie sesji',
       },
       refresh: {
         method: 'POST',
         path: '/auth/refresh',
-        metadata: { security: [{ bearerAuth: [] }] },
         responses: {
           200: AuthRefreshResDto,
           401: ErrorResDto,
           500: ErrorResDto,
         },
         body: c.noBody(),
+        headers: z.object({ 'x-refresh-token': z.string().min(1) }),
         summary: 'Odświeżenie tokenów access i refresh',
       },
     },

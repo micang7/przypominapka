@@ -1,16 +1,19 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import { db } from '../../db/client.js';
-import { users } from '../../db/schema.js';
+import { sessions, users } from '../../db/schema.js';
 import { app } from '../../app.js';
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { hash } from 'argon2';
+import { generateTokens } from '../../utils/generateTokens.js';
 
 describe('Auth Module', () => {
   const api = request(app);
 
   beforeEach(async () => {
-    await db.execute(sql`TRUNCATE TABLE users RESTART IDENTITY CASCADE`);
+    await db.execute(
+      sql`TRUNCATE TABLE users, sessions RESTART IDENTITY CASCADE`,
+    );
   });
 
   describe('POST /auth/register', () => {
@@ -143,6 +146,114 @@ describe('Auth Module', () => {
 
       expect(res.body).toHaveProperty('message');
       expect(res.body).toHaveProperty('errors');
+    });
+  });
+
+  describe('POST /auth/logout', () => {
+    let userId: number;
+    let accessToken: string;
+    let refreshToken: string;
+
+    let passwordHash: string;
+
+    beforeAll(async () => {
+      passwordHash = await hash('password123');
+    });
+
+    beforeEach(async () => {
+      const [user] = await db
+        .insert(users)
+        .values({
+          login: 'logoutUser',
+          passwordHash,
+        })
+        .returning();
+
+      userId = user!.id;
+
+      const tokens = await generateTokens(userId);
+      accessToken = tokens.accessToken;
+      refreshToken = tokens.refreshToken;
+    });
+
+    it('logs out successfully and removes session', async () => {
+      const res = await api
+        .post('/api/v1/auth/logout')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .set('x-refresh-token', refreshToken)
+        .send();
+
+      expect(res.status).toBe(204);
+
+      const sessionsInDb = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, userId));
+
+      expect(sessionsInDb.length).toBe(0);
+    });
+
+    it('does nothing when refresh token does not match any session', async () => {
+      const res = await api
+        .post('/api/v1/auth/logout')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .set('x-refresh-token', 'wrongRefreshToken')
+        .send();
+
+      expect(res.status).toBe(204);
+
+      const sessionsInDb = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, userId));
+
+      expect(sessionsInDb.length).toBe(1);
+    });
+
+    it('does nothing when user has no sessions', async () => {
+      await db.delete(sessions).where(eq(sessions.userId, userId));
+
+      const res = await api
+        .post('/api/v1/auth/logout')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .set('x-refresh-token', refreshToken)
+        .send();
+
+      expect(res.status).toBe(204);
+
+      const sessionsInDb = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, userId));
+
+      expect(sessionsInDb.length).toBe(0);
+    });
+
+    it('removes only matching session when multiple sessions exist', async () => {
+      await generateTokens(userId);
+      await generateTokens(userId);
+
+      const allSessions = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, userId));
+
+      expect(allSessions.length).toBe(3);
+
+      const res = await api
+        .post('/api/v1/auth/logout')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .set('x-refresh-token', refreshToken)
+        .send();
+
+      expect(res.status).toBe(204);
+
+      const sessionsInDb = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, userId));
+
+      expect(sessionsInDb.length).toBe(2);
     });
   });
 });
