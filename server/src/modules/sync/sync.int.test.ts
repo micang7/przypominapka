@@ -200,5 +200,67 @@ describe('Sync Module', () => {
       expect(res.body).toHaveProperty('message');
       expect(res.body).toHaveProperty('errors');
     });
+
+    it('responds with 500 when database transaction fails', async () => {
+      vi.spyOn(db, 'transaction').mockRejectedValueOnce(
+        new Error('Database unavailable'),
+      );
+
+      const res = await api
+        .post('/api/v1/sync')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          last_sync_at: new Date().toISOString(),
+          changes: {
+            created: [],
+            updated: [],
+            deleted: [],
+          },
+        });
+
+      expect(res.status).toBe(500);
+    });
+
+    it('gracefully ignores duplicate task creation requests', async () => {
+      const taskId = 'e2b3b7c0-9999-4444-8888-1234567890ab';
+
+      await db.insert(tasks).values({
+        id: taskId,
+        userId,
+        title: 'Existing Task',
+        type: 'one_time',
+      });
+
+      const res = await api
+        .post('/api/v1/sync')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          last_sync_at: new Date().toISOString(),
+          changes: {
+            created: [
+              {
+                id: taskId,
+                title: 'Duplicate Task',
+                description: null,
+                type: 'one_time',
+                timeTriggerAt: null,
+                geoTriggerLatitude: null,
+                geoTriggerLongitude: null,
+                geoTriggerRadius: null,
+              },
+            ],
+            updated: [],
+            deleted: [],
+          },
+        });
+
+      expect(res.status).toBe(200);
+
+      const allTasks = await db.query.tasks.findMany({
+        where: eq(tasks.id, taskId),
+      });
+
+      expect(allTasks.length).toBe(1);
+    });
   });
 });
