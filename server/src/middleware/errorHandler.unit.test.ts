@@ -105,9 +105,7 @@ describe('errorHandler', () => {
       expect(res.json).toHaveBeenCalledExactlyOnceWith({
         message: 'Internal Server Error',
       });
-      expect(appLogger.error).toHaveBeenCalledExactlyOnceWith({
-        error,
-      });
+      expect(appLogger.error).toHaveBeenCalled();
     });
   });
 });

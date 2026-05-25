@@ -1,6 +1,7 @@
 import { s } from '../../config/tsRestServer.js';
 import { apiContract } from '../../api/apiContract.js';
 import { authService } from './auth.service.js';
+import { UnauthorizedError } from '../../utils/appErrors.js';
 
 export const authController = s.router(apiContract.auth, {
   register: async ({ body }) => {
@@ -10,38 +11,39 @@ export const authController = s.router(apiContract.auth, {
       body: result,
     };
   },
-  login: async () => {
-    await Promise.resolve();
+  login: async ({ body }) => {
+    const result = await authService.login(body);
     return {
       status: 200,
-      body: {
-        user: {
-          id: 1,
-          login: 'login',
-          createdAt: '2026-05-17T13:22:37.400Z',
-          updatedAt: '2026-05-17T13:22:37.400Z',
-        },
-        accessToken: 'string',
-        refreshToken: 'string',
-        accessTokenExpiresAt: '2026-05-17T13:22:37.400Z',
-        refreshTokenExpiresAt: '2026-05-17T13:22:37.400Z',
-      },
+      body: result,
     };
   },
-  logout: async () => {
-    await Promise.resolve();
-    return { status: 204, body: undefined };
+  logout: async ({ headers, req }) => {
+    const userId = req.userId!;
+    const refreshToken = headers['x-refresh-token'];
+
+    if (!refreshToken) {
+      throw new UnauthorizedError('Missing refresh token header for logout');
+    }
+    await authService.logout(userId, refreshToken);
+
+    return {
+      status: 204,
+      body: undefined,
+    };
   },
-  refresh: async () => {
-    await Promise.resolve();
+  refresh: async ({ headers }) => {
+    const refreshToken = headers['x-refresh-token'];
+
+    if (!refreshToken) {
+      throw new UnauthorizedError('Missing refresh token header for refresh');
+    }
+
+    const result = await authService.refresh(refreshToken);
+
     return {
       status: 200,
-      body: {
-        accessToken: 'string',
-        refreshToken: 'string',
-        accessTokenExpiresAt: '2026-05-17T13:22:37.400Z',
-        refreshTokenExpiresAt: '2026-05-17T13:22:37.400Z',
-      },
+      body: result,
     };
   },
 });

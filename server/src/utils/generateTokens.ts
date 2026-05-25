@@ -3,15 +3,20 @@ import { hash } from 'argon2';
 import { env } from '../config/env.js';
 import { db } from '../db/client.js';
 import { sessions } from '../db/schema.js';
+import { randomUUID } from 'crypto';
 
 export async function generateTokens(userId: number) {
-  const accessToken = jwt.sign({ userId }, env.JWT_SECRET, {
+  const accessToken = jwt.sign({ userId, jti: randomUUID() }, env.JWT_SECRET, {
     expiresIn: env.JWT_EXPIRES_IN,
   });
 
-  const refreshToken = jwt.sign({ userId }, env.JWT_REFRESH_SECRET, {
-    expiresIn: env.JWT_REFRESH_EXPIRES_IN,
-  });
+  const refreshToken = jwt.sign(
+    { userId, jti: randomUUID() },
+    env.JWT_REFRESH_SECRET,
+    {
+      expiresIn: env.JWT_REFRESH_EXPIRES_IN,
+    },
+  );
 
   const tokenHash = await hash(refreshToken);
   await db.insert(sessions).values({

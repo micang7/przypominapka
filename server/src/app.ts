@@ -8,6 +8,7 @@ import { reqLogger } from './config/httpLogger.js';
 import { createExpressEndpoints } from '@ts-rest/express';
 import { apiContract } from './api/apiContract.js';
 import { router } from './router.js';
+import { jwtAuth } from './middleware/jwtAuth.js';
 
 export const app = express();
 
@@ -16,6 +17,18 @@ app.use(express.json());
 app.use(reqLogger);
 
 createExpressEndpoints(apiContract, router, app, {
+  globalMiddleware: [
+    (req, res, next) => {
+      if (
+        'metadata' in req.tsRestRoute &&
+        req.tsRestRoute.metadata &&
+        req.tsRestRoute.metadata.security.some((s) => 'bearerAuth' in s)
+      ) {
+        return jwtAuth(req, res, next);
+      }
+      next();
+    },
+  ],
   requestValidationErrorHandler(err, _req, _res, next) {
     const errors = [
       ...(err.pathParams?.issues ?? []).map((issue) => ({
