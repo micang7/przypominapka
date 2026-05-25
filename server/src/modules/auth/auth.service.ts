@@ -11,6 +11,8 @@ import { assertExists } from '../../utils/assertExists.js';
 import type { AuthLoginDtoType } from '../../api/dtos/auth/authLogin.dto.js';
 import type { AuthLoginResDtoType } from '../../api/dtos/auth/authLogin.res.dto.js';
 import { eq } from 'drizzle-orm';
+import type { AuthRefreshResDtoType } from '../../api/dtos/auth/authRefresh.res.dto.js';
+import { decodeToken } from '../../utils/decodeToken.js';
 
 class AuthService {
   async register(data: AuthRegisterDtoType): Promise<AuthRegisterResDtoType> {
@@ -125,6 +127,55 @@ class AuthService {
     } else {
       appLogger.warn({ userId }, 'No matching session was found');
     }
+  }
+
+  async refresh(refreshToken: string): Promise<AuthRefreshResDtoType> {
+    const userId = decodeToken(refreshToken, 'refresh');
+
+    appLogger.debug({ userId }, 'Token refresh initiated');
+
+    const userSessions = await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.userId, userId));
+
+    appLogger.debug(
+      { userId, sessions: userSessions.length },
+      'User sessions found',
+    );
+
+    let activeSession = null;
+
+    for (const session of userSessions) {
+      const isMatch = await verify(session.tokenHash, refreshToken);
+      if (isMatch) {
+        activeSession = session;
+        break;
+      }
+    }
+
+    if (!activeSession) {
+      appLogger.warn({ userId }, 'Refresh token blocked (no matching session)');
+      throw new UnauthorizedError('Invalid or expired refresh token');
+    }
+
+    appLogger.debug(
+      { userId, sessionId: activeSession.id },
+      'Matching session found',
+    );
+
+    await db.delete(sessions).where(eq(sessions.id, activeSession.id));
+
+    appLogger.debug(
+      { userId, sessionId: activeSession.id },
+      'Old session deleted',
+    );
+
+    const tokens = await generateTokens(userId);
+
+    appLogger.info({ userId }, 'Token refresh completed');
+
+    return tokens;
   }
 }
 

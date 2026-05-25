@@ -4,7 +4,7 @@ import { db } from '../../db/client.js';
 import { sessions, users } from '../../db/schema.js';
 import { app } from '../../app.js';
 import { eq, sql } from 'drizzle-orm';
-import { hash } from 'argon2';
+import { hash, verify } from 'argon2';
 import { generateTokens } from '../../utils/generateTokens.js';
 
 describe('Auth Module', () => {
@@ -254,6 +254,131 @@ describe('Auth Module', () => {
         .where(eq(sessions.userId, userId));
 
       expect(sessionsInDb.length).toBe(2);
+    });
+  });
+
+  describe('POST /auth/refresh', () => {
+    let userId: number;
+    let accessToken: string;
+    let refreshToken: string;
+    let passwordHash: string;
+
+    beforeAll(async () => {
+      passwordHash = await hash('password123');
+    });
+
+    beforeEach(async () => {
+      const [user] = await db
+        .insert(users)
+        .values({
+          login: 'refreshUser',
+          passwordHash,
+        })
+        .returning();
+
+      userId = user!.id;
+
+      const tokens = await generateTokens(userId);
+      accessToken = tokens.accessToken;
+      refreshToken = tokens.refreshToken;
+    });
+
+    it('refreshes tokens successfully', async () => {
+      const res = await api
+        .post('/api/v1/auth/refresh')
+        .set('x-refresh-token', refreshToken)
+        .send();
+
+      expect(res.status).toBe(200);
+
+      expect(res.body).toHaveProperty('accessToken');
+      expect(res.body).toHaveProperty('refreshToken');
+      expect(res.body.accessToken).not.toBe(accessToken);
+      expect(res.body.refreshToken).not.toBe(refreshToken);
+      expect(res.body.accessTokenExpiresAt).toBeDefined();
+      expect(res.body.refreshTokenExpiresAt).toBeDefined();
+
+      const sessionsInDb = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, userId));
+
+      expect(sessionsInDb.length).toBe(1);
+
+      const isOldTokenMatching = await verify(
+        sessionsInDb[0]!.tokenHash,
+        refreshToken,
+      );
+      expect(isOldTokenMatching).toBe(false);
+
+      const isNewTokenMatching = await verify(
+        sessionsInDb[0]!.tokenHash,
+        res.body.refreshToken as string,
+      );
+      expect(isNewTokenMatching).toBe(true);
+    });
+
+    it('fails when refresh token does not match any session', async () => {
+      await db.delete(sessions).where(eq(sessions.userId, userId));
+      await generateTokens(userId);
+
+      const res = await api
+        .post('/api/v1/auth/refresh')
+        .set('x-refresh-token', refreshToken)
+        .send();
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe('Invalid or expired refresh token');
+
+      const sessionsInDb = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, userId));
+
+      expect(sessionsInDb.length).toBe(1);
+    });
+
+    it('fails when x-refresh-token header is missing', async () => {
+      const res = await api.post('/api/v1/auth/refresh').send();
+
+      expect(res.status).toBe(400);
+      expect(res.body).toHaveProperty('message');
+      expect(res.body).toHaveProperty('errors');
+    });
+
+    it('removes only the matched session when multiple sessions exist', async () => {
+      const secondSessionTokens = await generateTokens(userId);
+      await generateTokens(userId);
+
+      const initialSessions = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, userId));
+
+      expect(initialSessions.length).toBe(3);
+
+      const res = await api
+        .post('/api/v1/auth/refresh')
+        .set('x-refresh-token', refreshToken)
+        .send();
+
+      expect(res.status).toBe(200);
+
+      const finalSessions = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, userId));
+
+      expect(finalSessions.length).toBe(3);
+
+      let isSecondSessionStillValid = false;
+      for (const session of finalSessions) {
+        if (await verify(session.tokenHash, secondSessionTokens.refreshToken)) {
+          isSecondSessionStillValid = true;
+          break;
+        }
+      }
+      expect(isSecondSessionStillValid).toBe(true);
     });
   });
 });

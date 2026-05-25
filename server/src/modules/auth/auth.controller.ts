@@ -32,16 +32,18 @@ export const authController = s.router(apiContract.auth, {
       body: undefined,
     };
   },
-  refresh: async () => {
-    await Promise.resolve();
+  refresh: async ({ headers }) => {
+    const refreshToken = headers['x-refresh-token'];
+
+    if (!refreshToken) {
+      throw new UnauthorizedError('Missing refresh token header for refresh');
+    }
+
+    const result = await authService.refresh(refreshToken);
+
     return {
       status: 200,
-      body: {
-        accessToken: 'string',
-        refreshToken: 'string',
-        accessTokenExpiresAt: '2026-05-17T13:22:37.400Z',
-        refreshTokenExpiresAt: '2026-05-17T13:22:37.400Z',
-      },
+      body: result,
     };
   },
 });
