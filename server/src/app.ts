@@ -2,20 +2,40 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { openApiDocument } from './api/openApi.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { NotFoundError } from './utils/appErrors.js';
-import { logger } from './config/logger.js';
-import { httpLogger } from './config/httpLogger.js';
+import { BadRequestError, NotFoundError } from './utils/appErrors.js';
+import { appLogger } from './config/logger.js';
+import { reqLogger } from './config/httpLogger.js';
+import { createExpressEndpoints } from '@ts-rest/express';
+import { apiContract } from './api/apiContract.js';
+import { router } from './router.js';
 
 export const app = express();
 
 app.use(express.json());
 
-app.use(httpLogger);
+app.use(reqLogger);
 
-app.get('/api/v1', (_req, res) => {
-  res.status(200).json({
-    message: 'AMDG',
-  });
+createExpressEndpoints(apiContract, router, app, {
+  requestValidationErrorHandler(err, _req, _res, next) {
+    const errors = [
+      ...(err.pathParams?.issues ?? []).map((issue) => ({
+        path: `params.${issue.path.join('.')}`,
+        code: issue.code,
+        error: issue.message,
+      })),
+      ...(err.query?.issues ?? []).map((issue) => ({
+        path: `query.${issue.path.join('.')}`,
+        code: issue.code,
+        error: issue.message,
+      })),
+      ...(err.body?.issues ?? []).map((issue) => ({
+        path: `body.${issue.path.join('.')}`,
+        code: issue.code,
+        error: issue.message,
+      })),
+    ];
+    next(new BadRequestError(errors));
+  },
 });
 
 app.use('/api/v1/docs/ui', swaggerUi.serve, swaggerUi.setup(openApiDocument));
@@ -26,12 +46,12 @@ app.use((_req, _res, next) => next(new NotFoundError()));
 
 app.use(errorHandler);
 
-process.on('uncaughtException', (err: Error) => {
-  logger.error(`Uncaught Exception: ${err.message}`);
+process.on('uncaughtException', (error) => {
+  appLogger.error({ error }, 'Uncaught Exception');
   process.exit(1);
 });
 
-process.on('unhandledRejection', (err: Error) => {
-  logger.error(`Unhandled Promise Rejection: ${err.message}`);
+process.on('unhandledRejection', (error) => {
+  appLogger.error({ error }, 'Unhandled Promise Rejection');
   process.exit(1);
 });

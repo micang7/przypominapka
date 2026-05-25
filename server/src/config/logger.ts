@@ -3,7 +3,8 @@ import type { LoggerOptions } from 'pino';
 import { env } from './env.js';
 
 const pinoOptions: LoggerOptions = {
-  level: env.LOG_LEVEL || 'info',
+  level: env.LOG_LEVEL,
+  base: null,
 };
 
 if (env.NODE_ENV !== 'production') {
@@ -11,10 +12,14 @@ if (env.NODE_ENV !== 'production') {
     target: 'pino-pretty',
     options: {
       colorize: true,
-      translateTime: 'HH:MM:ss Z',
-      ignore: 'pid,hostname',
+      translateTime: 'SYS:standard',
+      ignore: 'req,res,responseTime,scope',
+      messageFormat: '[{scope}] {msg}',
     },
   };
 }
 
-export const logger = pino(pinoOptions);
+const logger = pino(pinoOptions);
+
+export const appLogger = logger.child({ scope: 'app' });
+export const httpLogger = logger.child({ scope: 'http' });

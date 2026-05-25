@@ -20,6 +20,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/src/db/migrations ./dist/db/migrations
 
 EXPOSE 3000
 CMD ["node", "dist/index.js"]

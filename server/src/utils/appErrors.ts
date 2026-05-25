@@ -2,17 +2,16 @@ import type { ValidationErrorType } from '../api/dtos/errors/validationError.res
 
 export class AppError extends Error {
   public statusCode: number;
-  public isOperational: boolean;
   public errors?: ValidationErrorType[];
   public paths?: string[];
 
   constructor(message: string, statusCode: number) {
     super(message);
     this.statusCode = statusCode;
-    this.isOperational = true;
 
     Object.setPrototypeOf(this, new.target.prototype);
 
+    /* c8 ignore next */
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
     }

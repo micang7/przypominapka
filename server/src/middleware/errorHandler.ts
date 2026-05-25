@@ -1,21 +1,21 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { AppError } from '../utils/appErrors.js';
-import { logger } from '../config/logger.js';
+import { AppError } from '../utils/appErrors.js';
+import { appLogger } from '../config/logger.js';
 
 export function errorHandler(
-  err: AppError,
+  err: unknown,
   _req: Request,
   res: Response,
   _next: NextFunction,
 ) {
-  if (err.isOperational) {
+  if (err instanceof AppError) {
     res.status(err.statusCode).json({
       message: err.message,
       ...(err.errors && { errors: err.errors }),
       ...(err.paths && { paths: err.paths }),
     });
   } else {
-    logger.error(err);
+    appLogger.error({ error: err });
     res.status(500).json({
       message: 'Internal Server Error',
     });

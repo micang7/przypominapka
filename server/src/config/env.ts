@@ -1,5 +1,13 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({
+  path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
+  override: true,
+});
+import type { StringValue } from 'ms';
+import pino from 'pino';
 import { z } from 'zod';
+
+const bootLogger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
 const envSchema = z.object({
   NODE_ENV: z
@@ -8,14 +16,28 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent'])
     .default('info'),
-  PORT: z.coerce.number().default(3000),
-  POSTGRES_HOST: z.string(),
-  POSTGRES_PORT: z.coerce.number(),
-  POSTGRES_DB: z.string(),
-  POSTGRES_USER: z.string(),
-  POSTGRES_PASSWORD: z.string(),
+  PORT: z.coerce.number().int().positive().default(3000),
+  POSTGRES_HOST: z.string().min(1),
+  POSTGRES_PORT: z.coerce.number().int().positive(),
+  POSTGRES_DB: z.string().min(1),
+  POSTGRES_USER: z.string().min(1),
+  POSTGRES_PASSWORD: z.string().min(1),
+  JWT_SECRET: z.string().min(1),
+  JWT_REFRESH_SECRET: z.string().min(1),
+  JWT_EXPIRES_IN: z.custom<StringValue>(),
+  JWT_REFRESH_EXPIRES_IN: z.custom<StringValue>(),
 });
 
-export const env = envSchema.parse(process.env);
+const result = envSchema.safeParse(process.env);
+
+if (!result.success) {
+  bootLogger.fatal(
+    { missingVariables: result.error.flatten().fieldErrors },
+    'Missing or invalid environment variables',
+  );
+  process.exit(1);
+}
+
+export const env = result.data;
 
 export type Env = z.infer<typeof envSchema>;
