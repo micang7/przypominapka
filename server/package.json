@@ -13,7 +13,7 @@
     "db:mg": "drizzle-kit migrate",
     "migrate": "cross-env NODE_ENV=production node dist/db/scripts/migrate.js",
     "test:unit": "cross-env NODE_ENV=test vitest run --project unit --coverage",
-    "test:int": "cross-env NODE_ENV=test npm run db:mg && vitest run --project integration"
+    "test:int": "cross-env NODE_ENV=test npm run db:mg && vitest --maxWorkers=1 run --project integration"
   },
   "keywords": [],
   "author": "",
