@@ -1,13 +1,16 @@
-import { hash } from 'argon2';
+import { hash, verify } from 'argon2';
 import { db } from '../../db/client.js';
 import { users } from '../../db/schema.js';
-import { ConflictError } from '../../utils/appErrors.js';
+import { ConflictError, UnauthorizedError } from '../../utils/appErrors.js';
 import type { AuthRegisterDtoType } from '../../api/dtos/auth/authRegister.dto.js';
 import type { AuthRegisterResDtoType } from '../../api/dtos/auth/authRegister.res.dto.js';
 import { generateTokens } from '../../utils/generateTokens.js';
 import { isDbError, DbError } from '../../utils/isDbError.js';
 import { appLogger } from '../../config/logger.js';
 import { assertExists } from '../../utils/assertExists.js';
+import type { AuthLoginDtoType } from '../../api/dtos/auth/authLogin.dto.js';
+import type { AuthLoginResDtoType } from '../../api/dtos/auth/authLogin.res.dto.js';
+import { eq } from 'drizzle-orm';
 
 class AuthService {
   async register(data: AuthRegisterDtoType): Promise<AuthRegisterResDtoType> {
@@ -52,6 +55,36 @@ class AuthService {
       }
       throw error;
     }
+  }
+
+  async login(data: AuthLoginDtoType): Promise<AuthLoginResDtoType> {
+    appLogger.debug({ login: data.login }, 'Login initiated');
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.login, data.login),
+    });
+    if (!user) {
+      throw new UnauthorizedError('Invalid login or password');
+    }
+
+    const isPasswordValid = await verify(user.passwordHash, data.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedError('Invalid login or password');
+    }
+
+    const tokens = await generateTokens(user.id);
+
+    appLogger.info({ userId: user.id, login: user.login }, 'Login completed');
+
+    return {
+      user: {
+        id: user.id,
+        login: user.login,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      },
+      ...tokens,
+    };
   }
 }
 
