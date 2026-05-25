@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import request from 'supertest';
 import { db } from '../../db/client.js';
-import { users } from '../../db/schema.js';
+import { sessions, users } from '../../db/schema.js';
 import { app } from '../../app.js';
 import { eq, sql } from 'drizzle-orm';
 import { hash } from 'argon2';
@@ -79,6 +79,71 @@ describe('Users Module', () => {
 
       expect(res.status).toBe(404);
       expect(res.body).toHaveProperty('message');
+    });
+  });
+
+  describe('DELETE /users/me', () => {
+    let userId: number;
+    let accessToken: string;
+
+    beforeEach(async () => {
+      const [user] = await db
+        .insert(users)
+        .values({
+          login: 'deleteMeUser',
+          passwordHash,
+        })
+        .returning();
+
+      userId = user!.id;
+
+      const tokens = await generateTokens(userId);
+      accessToken = tokens.accessToken;
+    });
+
+    it('successfully deletes the authenticated user account and their sessions', async () => {
+      const res = await api
+        .delete('/api/v1/users/me')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send();
+
+      expect(res.status).toBe(204);
+
+      const userInDb = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+      expect(userInDb.length).toBe(0);
+
+      const sessionsInDb = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, userId));
+      expect(sessionsInDb.length).toBe(0);
+    });
+
+    it('fails when authorization header is missing', async () => {
+      const res = await api.delete('/api/v1/users/me').send();
+
+      expect(res.status).toBe(401);
+
+      const userInDb = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+      expect(userInDb.length).toBe(1);
+    });
+
+    it('fails if user attempts to delete profile but does not exist in db', async () => {
+      await db.delete(users).where(eq(users.id, userId));
+
+      const res = await api
+        .delete('/api/v1/users/me')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send();
+
+      expect(res.status).toBe(404);
+      expect(res.body.message).toBe('User not found');
     });
   });
 });

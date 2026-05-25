@@ -13,8 +13,14 @@ export const usersController = s.router(apiContract.users, {
       body: result,
     };
   },
-  deleteMe: async () => {
-    await Promise.resolve();
-    return { status: 204, body: undefined };
+  deleteMe: async ({ req }) => {
+    const userId = req.userId!;
+
+    await usersService.delete(userId);
+
+    return {
+      status: 204,
+      body: undefined,
+    };
   },
 });
