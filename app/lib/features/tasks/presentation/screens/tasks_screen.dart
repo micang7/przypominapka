@@ -2,14 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app/features/tasks/domain/entities/task.dart';
 import 'package:app/features/tasks/data/repositories/task_repository_impl.dart';
+import 'package:app/features/auth/presentation/providers/auth_state_provider.dart';
 import '../providers/task_list_provider.dart';
 import '../widgets/task_list_item.dart';
 
-class TasksScreen extends ConsumerWidget {
+class TasksScreen extends ConsumerStatefulWidget {
   const TasksScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TasksScreen> createState() => _TasksScreenState();
+}
+
+class _TasksScreenState extends ConsumerState<TasksScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Synchronizuj zadania po wejściu na ekran
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(taskRepositoryProvider).syncTasks();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final timeTasks = ref.watch(timeTasksProvider);
     final geoTasks = ref.watch(geoTasksProvider);
     final allTasksAsync = ref.watch(allTasksProvider);
@@ -24,7 +39,13 @@ class TasksScreen extends ConsumerWidget {
             actions: [
               IconButton(
                 icon: const Icon(Icons.refresh),
+                tooltip: 'Synchronizuj',
                 onPressed: () => ref.read(taskRepositoryProvider).syncTasks(),
+              ),
+              IconButton(
+                icon: const Icon(Icons.logout),
+                tooltip: 'Wyloguj',
+                onPressed: () => ref.read(authStateProvider.notifier).logout(),
               ),
             ],
             bottom: PreferredSize(

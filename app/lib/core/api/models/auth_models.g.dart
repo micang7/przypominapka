@@ -19,13 +19,18 @@ _RegisterRequest _$RegisterRequestFromJson(Map<String, dynamic> json) =>
     _RegisterRequest(
       login: json['login'] as String,
       password: json['password'] as String,
+      confirmPassword: json['confirmPassword'] as String,
     );
 
 Map<String, dynamic> _$RegisterRequestToJson(_RegisterRequest instance) =>
-    <String, dynamic>{'login': instance.login, 'password': instance.password};
+    <String, dynamic>{
+      'login': instance.login,
+      'password': instance.password,
+      'confirmPassword': instance.confirmPassword,
+    };
 
 _UserDto _$UserDtoFromJson(Map<String, dynamic> json) => _UserDto(
-  id: json['id'] as String,
+  id: (json['id'] as num).toInt(),
   login: json['login'] as String,
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),

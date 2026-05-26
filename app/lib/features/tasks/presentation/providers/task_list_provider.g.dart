@@ -130,7 +130,7 @@ final class AllTasksProvider
   }
 }
 
-String _$allTasksHash() => r'd791e541e787e55fdc9926bd92a85339ebe744bf';
+String _$allTasksHash() => r'8655ab8d1a435021668341a23bdad9611d4c4901';
 
 @ProviderFor(filteredTasks)
 final filteredTasksProvider = FilteredTasksProvider._();

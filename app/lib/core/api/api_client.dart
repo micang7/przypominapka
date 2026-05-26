@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:app/core/http/http_config.dart';
+import 'package:app/features/auth/data/datasources/auth_local_datasource.dart';
 import 'models/auth_models.dart';
 import 'models/task_models.dart';
 
@@ -86,7 +87,7 @@ class SyncNamespace {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 ApiClient apiClient(Ref ref) {
   final dio = Dio(
     BaseOptions(
@@ -102,5 +103,14 @@ ApiClient apiClient(Ref ref) {
     responseBody: true,
   ));
 
-  return ApiClient(dio);
+  final client = ApiClient(dio);
+
+  // Załaduj token przy starcie
+  ref.watch(authLocalDatasourceProvider).getAccessToken().then((token) {
+    if (token != null) {
+      client.setToken(token);
+    }
+  });
+
+  return client;
 }

@@ -40,6 +40,12 @@ Map<String, dynamic> _$TaskDtoToJson(_TaskDto instance) => <String, dynamic>{
   'updatedAt': instance.updatedAt?.toIso8601String(),
 };
 
+_DeletedTaskDto _$DeletedTaskDtoFromJson(Map<String, dynamic> json) =>
+    _DeletedTaskDto(id: json['id'] as String);
+
+Map<String, dynamic> _$DeletedTaskDtoToJson(_DeletedTaskDto instance) =>
+    <String, dynamic>{'id': instance.id};
+
 _SyncChanges _$SyncChangesFromJson(Map<String, dynamic> json) => _SyncChanges(
   created:
       (json['created'] as List<dynamic>?)
@@ -52,7 +58,9 @@ _SyncChanges _$SyncChangesFromJson(Map<String, dynamic> json) => _SyncChanges(
           .toList() ??
       const [],
   deleted:
-      (json['deleted'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      (json['deleted'] as List<dynamic>?)
+          ?.map((e) => DeletedTaskDto.fromJson(e as Map<String, dynamic>))
+          .toList() ??
       const [],
 );
 

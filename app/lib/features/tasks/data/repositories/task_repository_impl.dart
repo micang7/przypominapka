@@ -8,16 +8,19 @@ import 'package:app/core/database/database.dart';
 import 'package:app/features/tasks/domain/entities/task.dart';
 import 'package:app/features/tasks/domain/repositories/task_repository_contract.dart';
 import 'package:app/features/tasks/data/datasources/task_local_datasource.dart';
+import 'package:app/features/auth/data/datasources/auth_local_datasource.dart';
 
 part 'task_repository_impl.g.dart';
 
 class TaskRepositoryImpl implements ITaskRepository {
   final ITaskLocalDatasource localDatasource;
   final ApiClient apiClient;
+  final Ref ref;
 
   TaskRepositoryImpl({
     required this.localDatasource,
     required this.apiClient,
+    required this.ref,
   });
 
   @override
@@ -35,33 +38,32 @@ class TaskRepositoryImpl implements ITaskRepository {
     try {
       final lastSyncAtStr = await _getMetadata('last_sync_at');
       final lastSyncAt = lastSyncAtStr != null 
-          ? DateTime.parse(lastSyncAtStr) 
-          : DateTime.fromMillisecondsSinceEpoch(0);
+          ? DateTime.parse(lastSyncAtStr).toUtc()
+          : DateTime.fromMillisecondsSinceEpoch(0).toUtc();
+
+      // Manual token fallback to ensure 200 OK
+      final token = await ref.read(authLocalDatasourceProvider).getAccessToken();
+      if (token != null) {
+        apiClient.setToken(token);
+      }
 
       final pendingTasks = await localDatasource.getPendingSyncTasks();
       dev.log('TaskRepository: Found ${pendingTasks.length} pending tasks');
 
-      if (pendingTasks.isEmpty) {
-        dev.log('TaskRepository: Nothing to sync, skipping');
-        return;
-      }
-
       final created = pendingTasks
-          .where((t) => t.deletedAt == null && t.createdAt == t.updatedAt)
+          .where((t) => t.deletedAt == null)
           .map(_entryToApiDto)
           .toList();
           
-      final updated = pendingTasks
-          .where((t) => t.deletedAt == null && t.createdAt != t.updatedAt)
-          .map(_entryToApiDto)
-          .toList();
+      final updated = <api.TaskDto>[]; 
           
       final deleted = pendingTasks
           .where((t) => t.deletedAt != null)
-          .map((t) => t.id)
+          .map((t) => api.DeletedTaskDto(id: t.id))
           .toList();
 
-      dev.log('TaskRepository: Sending sync request with ${created.length} created, ${updated.length} updated, ${deleted.length} deleted');
+      dev.log('TaskRepository: Sending sync request. Items: ${created.length}, Deleted: ${deleted.length}');
+      
       final response = await apiClient.sync.sync(
         api.SyncRequest(
           last_sync_at: lastSyncAt,
@@ -79,11 +81,13 @@ class TaskRepositoryImpl implements ITaskRepository {
         await localDatasource.markAsSynced(task.id);
       }
 
-      await _setMetadata('last_sync_at', response.sync_at.toIso8601String());
-      dev.log('TaskRepository: Sync completed successfully');
+      // Save sync time in clean ISO format
+      final cleanSyncAt = response.sync_at.toUtc().toIso8601String();
+      await _setMetadata('last_sync_at', cleanSyncAt);
+      
+      dev.log('TaskRepository: Sync completed successfully (200 OK)');
     } catch (e, st) {
-      dev.log('TaskRepository: Sync failed - Backend offline or unreachable (EXPECTED): $e', stackTrace: st);
-      // Nie rzucamy błędu - offline-first app powinno działać bez sync
+      dev.log('TaskRepository: Sync failed: $e', stackTrace: st);
     }
   }
 
@@ -105,15 +109,6 @@ class TaskRepositoryImpl implements ITaskRepository {
     try {
       await localDatasource.upsertTask(entry);
       dev.log('TaskRepository: Task saved locally');
-      
-      // Verification check
-      final verified = await localDatasource.getTaskById(task.id);
-      if (verified != null) {
-        dev.log('TaskRepository: Verification SUCCESS - task exists in DB');
-      } else {
-        dev.log('TaskRepository: Verification FAILED - task NOT found in DB after save');
-      }
-      
       unawaited(syncTasks());
     } catch (e) {
       dev.log('TaskRepository: Error adding task: $e');
@@ -192,12 +187,12 @@ class TaskRepositoryImpl implements ITaskRepository {
       description: entry.description,
       type: entry.type,
       completed: entry.completed,
-      timeTriggerAt: entry.timeTriggerAt,
+      timeTriggerAt: entry.timeTriggerAt?.toUtc(),
       geoTriggerLatitude: entry.geoTriggerLatitude,
       geoTriggerLongitude: entry.geoTriggerLongitude,
       geoTriggerRadius: entry.geoTriggerRadius,
-      createdAt: entry.createdAt,
-      updatedAt: entry.updatedAt,
+      createdAt: entry.createdAt.toUtc(),
+      updatedAt: entry.updatedAt.toUtc(),
     );
   }
 
@@ -237,5 +232,6 @@ ITaskRepository taskRepository(Ref ref) {
   return TaskRepositoryImpl(
     localDatasource: ref.watch(taskLocalDatasourceProvider),
     apiClient: ref.watch(apiClientProvider),
+    ref: ref,
   );
 }

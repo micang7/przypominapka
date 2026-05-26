@@ -13,6 +13,7 @@ abstract class ITaskLocalDatasource {
   Future<void> deleteTask(String id);
   Future<List<TaskEntry>> getPendingSyncTasks();
   Future<void> markAsSynced(String id);
+  Future<void> deleteAllTasks();
 }
 
 class TaskLocalDatasource implements ITaskLocalDatasource {
@@ -69,6 +70,14 @@ class TaskLocalDatasource implements ITaskLocalDatasource {
     return (db.update(db.tasks)..where((t) => t.id.equals(id))).write(
       const TasksCompanion(isPendingSync: Value(false)),
     );
+  }
+
+  @override
+  Future<void> deleteAllTasks() async {
+    await db.transaction(() async {
+      await db.delete(db.tasks).go();
+      await db.delete(db.appMetadata).go();
+    });
   }
 }
 

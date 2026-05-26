@@ -18,6 +18,7 @@ abstract class RegisterRequest with _$RegisterRequest {
   const factory RegisterRequest({
     required String login,
     required String password,
+    required String confirmPassword,
   }) = _RegisterRequest;
 
   factory RegisterRequest.fromJson(Map<String, dynamic> json) => _$RegisterRequestFromJson(json);
@@ -26,7 +27,7 @@ abstract class RegisterRequest with _$RegisterRequest {
 @freezed
 abstract class UserDto with _$UserDto {
   const factory UserDto({
-    required String id,
+    required int id,
     required String login,
     required DateTime createdAt,
     required DateTime updatedAt,

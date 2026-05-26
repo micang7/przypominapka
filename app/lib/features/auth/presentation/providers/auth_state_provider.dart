@@ -24,11 +24,18 @@ class AuthStateNotifier extends _$AuthStateNotifier {
   }
 
   Future<void> _init() async {
-    final success = await ref.read(authRepositoryProvider).tryAutoLogin();
-    state = state.copyWith(
-      isInitializing: false,
-      isAuthenticated: success,
-    );
+    try {
+      final success = await ref.read(authRepositoryProvider).tryAutoLogin();
+      state = state.copyWith(
+        isInitializing: false,
+        isAuthenticated: success,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isInitializing: false,
+        isAuthenticated: false,
+      );
+    }
   }
 
   Future<void> login(String login, String password) async {
@@ -44,7 +51,7 @@ class AuthStateNotifier extends _$AuthStateNotifier {
   Future<void> register(String login, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await ref.read(authRepositoryProvider).register(login, password);
+      await ref.read(authRepositoryProvider).register(login, password, password);
       state = state.copyWith(isLoading: false, isAuthenticated: true);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

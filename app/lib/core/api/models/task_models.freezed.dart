@@ -308,9 +308,272 @@ as DateTime?,
 
 
 /// @nodoc
+mixin _$DeletedTaskDto {
+
+ String get id;
+/// Create a copy of DeletedTaskDto
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$DeletedTaskDtoCopyWith<DeletedTaskDto> get copyWith => _$DeletedTaskDtoCopyWithImpl<DeletedTaskDto>(this as DeletedTaskDto, _$identity);
+
+  /// Serializes this DeletedTaskDto to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DeletedTaskDto&&(identical(other.id, id) || other.id == id));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id);
+
+@override
+String toString() {
+  return 'DeletedTaskDto(id: $id)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $DeletedTaskDtoCopyWith<$Res>  {
+  factory $DeletedTaskDtoCopyWith(DeletedTaskDto value, $Res Function(DeletedTaskDto) _then) = _$DeletedTaskDtoCopyWithImpl;
+@useResult
+$Res call({
+ String id
+});
+
+
+
+
+}
+/// @nodoc
+class _$DeletedTaskDtoCopyWithImpl<$Res>
+    implements $DeletedTaskDtoCopyWith<$Res> {
+  _$DeletedTaskDtoCopyWithImpl(this._self, this._then);
+
+  final DeletedTaskDto _self;
+  final $Res Function(DeletedTaskDto) _then;
+
+/// Create a copy of DeletedTaskDto
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [DeletedTaskDto].
+extension DeletedTaskDtoPatterns on DeletedTaskDto {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _DeletedTaskDto value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _DeletedTaskDto() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _DeletedTaskDto value)  $default,){
+final _that = this;
+switch (_that) {
+case _DeletedTaskDto():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _DeletedTaskDto value)?  $default,){
+final _that = this;
+switch (_that) {
+case _DeletedTaskDto() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _DeletedTaskDto() when $default != null:
+return $default(_that.id);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id)  $default,) {final _that = this;
+switch (_that) {
+case _DeletedTaskDto():
+return $default(_that.id);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id)?  $default,) {final _that = this;
+switch (_that) {
+case _DeletedTaskDto() when $default != null:
+return $default(_that.id);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _DeletedTaskDto implements DeletedTaskDto {
+  const _DeletedTaskDto({required this.id});
+  factory _DeletedTaskDto.fromJson(Map<String, dynamic> json) => _$DeletedTaskDtoFromJson(json);
+
+@override final  String id;
+
+/// Create a copy of DeletedTaskDto
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$DeletedTaskDtoCopyWith<_DeletedTaskDto> get copyWith => __$DeletedTaskDtoCopyWithImpl<_DeletedTaskDto>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$DeletedTaskDtoToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DeletedTaskDto&&(identical(other.id, id) || other.id == id));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id);
+
+@override
+String toString() {
+  return 'DeletedTaskDto(id: $id)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$DeletedTaskDtoCopyWith<$Res> implements $DeletedTaskDtoCopyWith<$Res> {
+  factory _$DeletedTaskDtoCopyWith(_DeletedTaskDto value, $Res Function(_DeletedTaskDto) _then) = __$DeletedTaskDtoCopyWithImpl;
+@override @useResult
+$Res call({
+ String id
+});
+
+
+
+
+}
+/// @nodoc
+class __$DeletedTaskDtoCopyWithImpl<$Res>
+    implements _$DeletedTaskDtoCopyWith<$Res> {
+  __$DeletedTaskDtoCopyWithImpl(this._self, this._then);
+
+  final _DeletedTaskDto _self;
+  final $Res Function(_DeletedTaskDto) _then;
+
+/// Create a copy of DeletedTaskDto
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,}) {
+  return _then(_DeletedTaskDto(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$SyncChanges {
 
- List<TaskDto> get created; List<TaskDto> get updated; List<String> get deleted;
+ List<TaskDto> get created; List<TaskDto> get updated; List<DeletedTaskDto> get deleted;
 /// Create a copy of SyncChanges
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -343,7 +606,7 @@ abstract mixin class $SyncChangesCopyWith<$Res>  {
   factory $SyncChangesCopyWith(SyncChanges value, $Res Function(SyncChanges) _then) = _$SyncChangesCopyWithImpl;
 @useResult
 $Res call({
- List<TaskDto> created, List<TaskDto> updated, List<String> deleted
+ List<TaskDto> created, List<TaskDto> updated, List<DeletedTaskDto> deleted
 });
 
 
@@ -365,7 +628,7 @@ class _$SyncChangesCopyWithImpl<$Res>
 created: null == created ? _self.created : created // ignore: cast_nullable_to_non_nullable
 as List<TaskDto>,updated: null == updated ? _self.updated : updated // ignore: cast_nullable_to_non_nullable
 as List<TaskDto>,deleted: null == deleted ? _self.deleted : deleted // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<DeletedTaskDto>,
   ));
 }
 
@@ -450,7 +713,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<TaskDto> created,  List<TaskDto> updated,  List<String> deleted)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<TaskDto> created,  List<TaskDto> updated,  List<DeletedTaskDto> deleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SyncChanges() when $default != null:
 return $default(_that.created,_that.updated,_that.deleted);case _:
@@ -471,7 +734,7 @@ return $default(_that.created,_that.updated,_that.deleted);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<TaskDto> created,  List<TaskDto> updated,  List<String> deleted)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<TaskDto> created,  List<TaskDto> updated,  List<DeletedTaskDto> deleted)  $default,) {final _that = this;
 switch (_that) {
 case _SyncChanges():
 return $default(_that.created,_that.updated,_that.deleted);case _:
@@ -491,7 +754,7 @@ return $default(_that.created,_that.updated,_that.deleted);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<TaskDto> created,  List<TaskDto> updated,  List<String> deleted)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<TaskDto> created,  List<TaskDto> updated,  List<DeletedTaskDto> deleted)?  $default,) {final _that = this;
 switch (_that) {
 case _SyncChanges() when $default != null:
 return $default(_that.created,_that.updated,_that.deleted);case _:
@@ -506,7 +769,7 @@ return $default(_that.created,_that.updated,_that.deleted);case _:
 @JsonSerializable()
 
 class _SyncChanges implements SyncChanges {
-  const _SyncChanges({final  List<TaskDto> created = const [], final  List<TaskDto> updated = const [], final  List<String> deleted = const []}): _created = created,_updated = updated,_deleted = deleted;
+  const _SyncChanges({final  List<TaskDto> created = const [], final  List<TaskDto> updated = const [], final  List<DeletedTaskDto> deleted = const []}): _created = created,_updated = updated,_deleted = deleted;
   factory _SyncChanges.fromJson(Map<String, dynamic> json) => _$SyncChangesFromJson(json);
 
  final  List<TaskDto> _created;
@@ -523,8 +786,8 @@ class _SyncChanges implements SyncChanges {
   return EqualUnmodifiableListView(_updated);
 }
 
- final  List<String> _deleted;
-@override@JsonKey() List<String> get deleted {
+ final  List<DeletedTaskDto> _deleted;
+@override@JsonKey() List<DeletedTaskDto> get deleted {
   if (_deleted is EqualUnmodifiableListView) return _deleted;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_deleted);
@@ -564,7 +827,7 @@ abstract mixin class _$SyncChangesCopyWith<$Res> implements $SyncChangesCopyWith
   factory _$SyncChangesCopyWith(_SyncChanges value, $Res Function(_SyncChanges) _then) = __$SyncChangesCopyWithImpl;
 @override @useResult
 $Res call({
- List<TaskDto> created, List<TaskDto> updated, List<String> deleted
+ List<TaskDto> created, List<TaskDto> updated, List<DeletedTaskDto> deleted
 });
 
 
@@ -586,7 +849,7 @@ class __$SyncChangesCopyWithImpl<$Res>
 created: null == created ? _self._created : created // ignore: cast_nullable_to_non_nullable
 as List<TaskDto>,updated: null == updated ? _self._updated : updated // ignore: cast_nullable_to_non_nullable
 as List<TaskDto>,deleted: null == deleted ? _self._deleted : deleted // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<DeletedTaskDto>,
   ));
 }
 

@@ -23,11 +23,20 @@ abstract class TaskDto with _$TaskDto {
 }
 
 @freezed
+abstract class DeletedTaskDto with _$DeletedTaskDto {
+  const factory DeletedTaskDto({
+    required String id,
+  }) = _DeletedTaskDto;
+
+  factory DeletedTaskDto.fromJson(Map<String, dynamic> json) => _$DeletedTaskDtoFromJson(json);
+}
+
+@freezed
 abstract class SyncChanges with _$SyncChanges {
   const factory SyncChanges({
     @Default([]) List<TaskDto> created,
     @Default([]) List<TaskDto> updated,
-    @Default([]) List<String> deleted,
+    @Default([]) List<DeletedTaskDto> deleted,
   }) = _SyncChanges;
 
   factory SyncChanges.fromJson(Map<String, dynamic> json) => _$SyncChangesFromJson(json);
