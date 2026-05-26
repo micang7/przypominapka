@@ -9,8 +9,11 @@ import { createExpressEndpoints } from '@ts-rest/express';
 import { apiContract } from './api/apiContract.js';
 import { router } from './router.js';
 import { jwtAuth } from './middleware/jwtAuth.js';
+import cors from 'cors';
 
 export const app = express();
+
+app.use(cors());
 
 app.use(express.json());
 
