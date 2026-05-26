@@ -24,6 +24,7 @@
     "@ts-rest/express": "^3.52.1",
     "@ts-rest/open-api": "^3.52.1",
     "argon2": "^0.44.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "express": "^4.22.2",
@@ -36,6 +37,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/ms": "^2.1.0",
