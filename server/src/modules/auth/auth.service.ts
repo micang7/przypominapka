@@ -157,6 +157,9 @@ class AuthService {
 
     if (!activeSession) {
       appLogger.warn({ userId }, 'Refresh token blocked (no matching session)');
+
+      await db.delete(sessions).where(eq(sessions.userId, userId));
+
       throw new UnauthorizedError('Invalid or expired refresh token');
     }
 

@@ -318,7 +318,7 @@ describe('Auth Module', () => {
       expect(isNewTokenMatching).toBe(true);
     });
 
-    it('fails when refresh token does not match any session', async () => {
+    it('fails and wipes all sessions (reuse detection) when refresh token does not match any session', async () => {
       await db.delete(sessions).where(eq(sessions.userId, userId));
       await generateTokens(userId);
 
@@ -335,7 +335,7 @@ describe('Auth Module', () => {
         .from(sessions)
         .where(eq(sessions.userId, userId));
 
-      expect(sessionsInDb.length).toBe(1);
+      expect(sessionsInDb.length).toBe(0);
     });
 
     it('fails when x-refresh-token header is missing', async () => {
