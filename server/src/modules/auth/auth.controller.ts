@@ -46,4 +46,20 @@ export const authController = s.router(apiContract.auth, {
       body: result,
     };
   },
+  changePassword: async ({ body, headers, req }) => {
+    const userId = req.userId!;
+    const refreshToken = headers['x-refresh-token'];
+
+    if (!refreshToken) {
+      throw new UnauthorizedError(
+        'Missing refresh token header for password change',
+      );
+    }
+    await authService.changePassword(userId, refreshToken, body);
+
+    return {
+      status: 204,
+      body: undefined,
+    };
+  },
 });
