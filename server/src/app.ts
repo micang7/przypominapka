@@ -62,12 +62,12 @@ app.use((_req, _res, next) => next(new NotFoundError()));
 
 app.use(errorHandler);
 
-process.on('uncaughtException', (error) => {
-  appLogger.error({ error }, 'Uncaught Exception');
+process.on('uncaughtException', (err) => {
+  appLogger.error({ err }, 'Uncaught Exception');
   process.exit(1);
 });
 
-process.on('unhandledRejection', (error) => {
-  appLogger.error({ error }, 'Unhandled Promise Rejection');
+process.on('unhandledRejection', (err) => {
+  appLogger.error({ err }, 'Unhandled Promise Rejection');
   process.exit(1);
 });
