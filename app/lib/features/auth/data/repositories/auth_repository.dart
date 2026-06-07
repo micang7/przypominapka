@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:app/core/api/api_client.dart';
 import 'package:app/core/api/models/auth_models.dart';
@@ -84,16 +85,7 @@ class AuthRepository {
     final accessToken = await _localDatasource.getAccessToken();
     if (accessToken != null) {
       _apiClient.setToken(accessToken);
-      
-      // Jeśli jesteśmy na mocku, nie sprawdzamy serwera
-      if (accessToken == 'mock_access_token') return true;
-
-      try {
-        await _apiClient.users.getMe();
-        return true;
-      } catch (e) {
-        return await tryRefresh();
-      }
+      return true; // Wchodzimy do aplikacji bez sprawdzania serwera
     }
     return false;
   }
@@ -111,6 +103,16 @@ class AuthRepository {
         );
         _apiClient.setToken(response.accessToken);
         return true;
+      } on DioException catch (e) {
+            // Nie wylogowuj przy błędach sieciowych
+        if (e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.sendTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.connectionError ||
+            e.type == DioExceptionType.unknown) {
+          return false;
+        }
+        await logout();
       } catch (e) {
         await logout();
       }
