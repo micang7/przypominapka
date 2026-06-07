@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:app/core/services/permissions_service.dart';
 import 'package:app/features/auth/presentation/providers/auth_state_provider.dart';
 import 'package:app/features/tasks/presentation/screens/tasks_screen.dart';
 import 'package:app/features/tasks/presentation/widgets/add_time_task_sheet.dart';
-import 'package:app/features/tasks/presentation/widgets/add_geo_task_sheet.dart';
 import 'package:app/features/tasks/presentation/screens/map_picker_screen.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
@@ -18,12 +18,20 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   final List<Widget> _screens = [
     const TasksScreen(),
-    const MapPickerScreen(), // Używamy teraz właściwego ekranu mapy
+    const MapPickerScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Prośba o uprawnienia przy pierwszym wejściu po zalogowaniu
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(permissionsServiceProvider).requestInitialPermissions();
+    });
+  }
 
   Future<void> _showAddTaskSheet(BuildContext context) async {
     if (_currentIndex == 0) {
-      // Zakładka "Zadania" -> Dodaj zadanie czasowe
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -34,15 +42,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         builder: (context) => const AddTimeTaskSheet(),
       );
     } else {
-      // Zakładka "Mapa" -> Wyzwalacz dodawania regionalnego
-      // Wyświetlamy prośbę o "Zatwierdzenie lokalizacji" za pomocą FAB, 
-      // który już obsługuje MapPickerScreen (zwracając wynik przez Navigator.pop)
-      
-      // Uwaga: W tej architekturze FAB w MainScreen odpala akcję.
-      // Skoro MapPicker jest w IndexedStack, musimy wymyślić jak przekazać sygnał "Zatwierdź".
-      // Najprościej: MapPicker sam obsłuży swój przycisk "Zatwierdź" wewnątrz swojego kodu (już to robi).
-      // Zatem w zakładce Mapa, FAB może służyć np. do wyśrodkowania na GPS.
-      
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Użyj przycisku na mapie, aby zatwierdzić strefę.'),
@@ -103,7 +102,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ],
         ),
       ),
-      // FAB widoczny tylko w pierwszej zakładce, mapa ma własny przycisk wewnątrz
       floatingActionButton: _currentIndex == 0 
         ? FloatingActionButton.extended(
             onPressed: () => _showAddTaskSheet(context),

@@ -68,15 +68,9 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
     if (!serviceEnabled) return Future.error('Usługi lokalizacji są wyłączone.');
 
     permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Uprawnienia do lokalizacji zostały odrzucone.');
-      }
-    }
     
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error('Uprawnienia do lokalizacji są na stałe zablokowane.');
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      return Future.error('Brak uprawnień do lokalizacji. Sprawdź ustawienia aplikacji.');
     } 
 
     return await Geolocator.getCurrentPosition();
@@ -101,7 +95,6 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
       ),
       body: Stack(
         children: [
-          // 1. MAPA
           GoogleMap(
             initialCameraPosition: CameraPosition(
               target: pickerState.center,
@@ -125,11 +118,9 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
           ),
-
-          // 2. CENTRALNA PINEZKA (CELOWNIK)
           Center(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 36), // Przesunięcie, aby grot był w środku
+              padding: const EdgeInsets.only(bottom: 36),
               child: Icon(
                 Icons.location_on,
                 size: 48,
@@ -137,8 +128,6 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
               ),
             ),
           ),
-
-          // 3. PANEL DOLNY (SUWAK I PRZYCISK)
           Positioned(
             left: 16,
             right: 16,
