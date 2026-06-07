@@ -24,6 +24,14 @@
             </intent-filter>
         </receiver>
 
+        <!-- Receivers for native_geofence -->
+        <receiver android:name="com.chunkytofustudios.native_geofence.receivers.NativeGeofenceBroadcastReceiver" android:exported="true"/>
+        <receiver android:name="com.chunkytofustudios.native_geofence.receivers.NativeGeofenceRebootBroadcastReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}"/>
         

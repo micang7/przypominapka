@@ -752,6 +752,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.6.4"
+  native_geofence:
+    dependency: "direct main"
+    description:
+      name: native_geofence
+      sha256: a6bf80dfe3c74d2f932ffed5d623d70ded3acad7dd01f0ccb1dfa0aa6f68ad14
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
   node_preamble:
     dependency: transitive
     description:

@@ -9,6 +9,7 @@ import 'package:app/features/tasks/domain/repositories/task_repository_contract.
 import 'package:app/features/tasks/data/datasources/task_local_datasource.dart';
 import 'package:app/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:app/core/services/notification_service.dart';
+import 'package:app/core/services/geofencing_service.dart';
 import 'package:flutter/foundation.dart';
 
 part 'task_repository_impl.g.dart';
@@ -67,9 +68,16 @@ class TaskRepositoryImpl implements ITaskRepository {
     if (toUpsert.isNotEmpty) {
       await localDatasource.upsertTasks(toUpsert);
       for (final dto in changes.created) {
-        if (dto.timeTriggerAt != null && !dto.completed) {
-          _scheduleTaskNotification(dto.id, dto.title, dto.description, dto.timeTriggerAt!);
-        }
+        _updateTaskTriggers(
+          dto.id, 
+          dto.title, 
+          dto.description, 
+          dto.completed, 
+          dto.timeTriggerAt, 
+          dto.geoTriggerLatitude, 
+          dto.geoTriggerLongitude, 
+          dto.geoTriggerRadius?.toDouble() // Fix: cast int to double
+        );
       }
     }
   }
@@ -78,11 +86,7 @@ class TaskRepositoryImpl implements ITaskRepository {
   Future<void> addTask(Task task) async {
     final entry = _entityToEntry(task).copyWith(isPendingSync: true);
     await localDatasource.upsertTask(entry);
-    
-    if (task.timeTriggerAt != null && !task.completed) {
-      _scheduleTaskNotification(task.id, task.title, task.description, task.timeTriggerAt!);
-    }
-
+    _updateTaskTriggersFromEntity(task);
     unawaited(syncTasks());
   }
 
@@ -90,19 +94,18 @@ class TaskRepositoryImpl implements ITaskRepository {
   Future<void> updateTask(Task task) async {
     final entry = _entityToEntry(task).copyWith(isPendingSync: true, updatedAt: DateTime.now());
     await localDatasource.upsertTask(entry);
-    
-    if (task.timeTriggerAt != null && !task.completed) {
-      _scheduleTaskNotification(task.id, task.title, task.description, task.timeTriggerAt!);
-    } else {
-      ref.read(notificationServiceProvider).cancelNotification(_getNotificationId(task.id));
-    }
+    _updateTaskTriggersFromEntity(task);
     unawaited(syncTasks());
   }
 
   @override
   Future<void> deleteTask(String id) async {
+    final entry = await localDatasource.getTaskById(id);
+    if (entry != null) {
+      ref.read(notificationServiceProvider).cancelNotification(_getNotificationId(id));
+      ref.read(geofencingServiceProvider).removeGeofence(id, entry.title);
+    }
     await localDatasource.deleteTask(id);
-    ref.read(notificationServiceProvider).cancelNotification(_getNotificationId(id));
     unawaited(syncTasks());
   }
 
@@ -112,30 +115,60 @@ class TaskRepositoryImpl implements ITaskRepository {
     if (entry != null) {
       final updated = entry.copyWith(completed: !entry.completed, isPendingSync: true, updatedAt: DateTime.now());
       await localDatasource.upsertTask(updated);
-      
-      if (updated.completed) {
-        ref.read(notificationServiceProvider).cancelNotification(_getNotificationId(id));
-      } else if (updated.timeTriggerAt != null) {
-        _scheduleTaskNotification(id, updated.title, updated.description, updated.timeTriggerAt!);
-      }
+      _updateTaskTriggers(
+        updated.id, 
+        updated.title, 
+        updated.description, 
+        updated.completed, 
+        updated.timeTriggerAt, 
+        updated.geoTriggerLatitude, 
+        updated.geoTriggerLongitude, 
+        updated.geoTriggerRadius?.toDouble() // Fix: cast int to double
+      );
       unawaited(syncTasks());
     }
   }
 
-  int _getNotificationId(String uuid) {
-    return uuid.hashCode.abs() % 2147483647;
-  }
-
-  void _scheduleTaskNotification(String id, String title, String? body, DateTime date) {
-    ref.read(notificationServiceProvider).scheduleNotification(
-      id: _getNotificationId(id),
-      title: 'Zadanie: ' + title,
-      body: body != null && body.isNotEmpty ? body : 'Czas na realizację!',
-      scheduledDate: date,
+  void _updateTaskTriggersFromEntity(Task task) {
+    _updateTaskTriggers(
+      task.id, 
+      task.title, 
+      task.description, 
+      task.completed, 
+      task.timeTriggerAt, 
+      task.geoTriggerLatitude, 
+      task.geoTriggerLongitude, 
+      task.geoTriggerRadius?.toDouble()
     );
   }
 
-  // Helpers
+  void _updateTaskTriggers(String id, String title, String? description, bool completed, DateTime? timeAt, double? lat, double? lng, double? radius) {
+    if (!completed && timeAt != null) {
+      ref.read(notificationServiceProvider).scheduleNotification(
+        id: _getNotificationId(id),
+        title: 'Zadanie: ' + title,
+        body: (description != null && description.isNotEmpty) ? description : 'Czas na realizację!',
+        scheduledDate: timeAt,
+      );
+    } else {
+      ref.read(notificationServiceProvider).cancelNotification(_getNotificationId(id));
+    }
+
+    if (!completed && lat != null && lng != null && radius != null) {
+      ref.read(geofencingServiceProvider).registerGeofence(
+        id: id,
+        title: title,
+        lat: lat,
+        lng: lng,
+        radius: radius,
+      );
+    } else {
+      ref.read(geofencingServiceProvider).removeGeofence(id, title);
+    }
+  }
+
+  int _getNotificationId(String uuid) => uuid.hashCode.abs() % 2147483647;
+
   Task _entryToEntity(TaskEntry entry) => Task(id: entry.id, title: entry.title, description: entry.description, type: entry.type == 'recurrent' ? TaskType.recurrent : TaskType.oneTime, completed: entry.completed, timeTriggerAt: entry.timeTriggerAt, geoTriggerLatitude: entry.geoTriggerLatitude, geoTriggerLongitude: entry.geoTriggerLongitude, geoTriggerRadius: entry.geoTriggerRadius, createdAt: entry.createdAt, updatedAt: entry.updatedAt);
   TaskEntry _entityToEntry(Task entity) => TaskEntry(id: entity.id, title: entity.title, description: entity.description, type: entity.type == TaskType.recurrent ? 'recurrent' : 'one_time', completed: entity.completed, timeTriggerAt: entity.timeTriggerAt, geoTriggerLatitude: entity.geoTriggerLatitude, geoTriggerLongitude: entity.geoTriggerLongitude, geoTriggerRadius: entity.geoTriggerRadius, createdAt: entity.createdAt, updatedAt: entity.updatedAt, isPendingSync: false);
   api.TaskDto _entryToApiDto(TaskEntry entry) => api.TaskDto(id: entry.id, title: entry.title, description: entry.description, type: entry.type, completed: entry.completed, timeTriggerAt: entry.timeTriggerAt?.toUtc(), geoTriggerLatitude: entry.geoTriggerLatitude, geoTriggerLongitude: entry.geoTriggerLongitude, geoTriggerRadius: entry.geoTriggerRadius, createdAt: entry.createdAt.toUtc(), updatedAt: entry.updatedAt.toUtc());
