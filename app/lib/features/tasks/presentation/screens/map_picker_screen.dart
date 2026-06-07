@@ -17,6 +17,14 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
   bool _isLocating = false;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _goToCurrentLocation();
+    });
+  }
+
+  @override
   void dispose() {
     _mapController?.dispose();
     super.dispose();

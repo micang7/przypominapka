@@ -7,4 +7,5 @@ abstract class ITaskRepository {
   Future<void> updateTask(Task task);
   Future<void> deleteTask(String id);
   Future<void> toggleTaskCompletion(String id);
+  Future<void> reinitializeTriggers();
 }

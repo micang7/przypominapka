@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:app/core/services/permissions_service.dart';
 import 'package:app/features/auth/presentation/providers/auth_state_provider.dart';
+import 'package:app/features/tasks/data/repositories/task_repository_impl.dart';
 import 'package:app/features/tasks/presentation/screens/tasks_screen.dart';
 import 'package:app/features/tasks/presentation/widgets/add_time_task_sheet.dart';
 import 'package:app/features/tasks/presentation/screens/tasks_map_screen.dart';
@@ -27,6 +28,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(permissionsServiceProvider).requestInitialPermissions();
+      // Uruchom wyzwalacze dopiero po zapytaniu o uprawnienia
+      await ref.read(taskRepositoryProvider).reinitializeTriggers();
     });
   }
 

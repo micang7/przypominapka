@@ -10,6 +10,7 @@ class PermissionsService {
     if (status.isGranted) {
       await Permission.locationAlways.request();
     }
+    await Permission.ignoreBatteryOptimizations.request();
     await Permission.scheduleExactAlarm.request();
   }
 }

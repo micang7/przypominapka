@@ -123,9 +123,26 @@ class TaskRepositoryImpl implements ITaskRepository {
         updated.timeTriggerAt, 
         updated.geoTriggerLatitude, 
         updated.geoTriggerLongitude, 
-        updated.geoTriggerRadius?.toDouble() // Fix: cast int to double
+        updated.geoTriggerRadius?.toDouble()
       );
       unawaited(syncTasks());
+    }
+  }
+
+  @override
+  Future<void> reinitializeTriggers() async {
+    final tasks = await localDatasource.getAllTasks();
+    for (final task in tasks) {
+      _updateTaskTriggers(
+        task.id,
+        task.title,
+        task.description,
+        task.completed,
+        task.timeTriggerAt,
+        task.geoTriggerLatitude,
+        task.geoTriggerLongitude,
+        task.geoTriggerRadius?.toDouble(),
+      );
     }
   }
 
