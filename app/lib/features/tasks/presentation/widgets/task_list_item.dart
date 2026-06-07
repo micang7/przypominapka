@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:app/features/tasks/domain/entities/task.dart';
 import '../providers/tasks_providers.dart';
+import './edit_task_sheet.dart';
 
 class TaskListItem extends ConsumerWidget {
   final Task task;
@@ -34,7 +35,15 @@ class TaskListItem extends ConsumerWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            // TODO: Edit task
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: theme.colorScheme.surface,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              builder: (context) => EditTaskSheet(task: task),
+            );
           },
           child: Padding(
             padding: const EdgeInsets.all(12),
