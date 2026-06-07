@@ -24,56 +24,21 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   void initState() {
     super.initState();
-    // Prośba o uprawnienia przy pierwszym wejściu po zalogowaniu
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(permissionsServiceProvider).requestInitialPermissions();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(permissionsServiceProvider).requestInitialPermissions();
     });
-  }
-
-  Future<void> _showAddTaskSheet(BuildContext context) async {
-    if (_currentIndex == 0) {
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        builder: (context) => const AddTimeTaskSheet(),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Użyj przycisku na mapie, aby zatwierdzić strefę.'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onDestinationSelected: (index) => setState(() => _currentIndex = index),
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.list_alt_rounded),
-            label: 'Zadania',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.map_rounded),
-            label: 'Mapa',
-          ),
+          NavigationDestination(icon: Icon(Icons.list_alt_rounded), label: 'Zadania'),
+          NavigationDestination(icon: Icon(Icons.map_rounded), label: 'Mapa'),
         ],
       ),
       drawer: Drawer(
@@ -92,19 +57,24 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 ),
               ),
             ),
+            const Spacer(),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Wyloguj się'),
-              onTap: () {
-                ref.read(authStateProvider.notifier).logout();
-              },
+              onTap: () => ref.read(authStateProvider.notifier).logout(),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
       floatingActionButton: _currentIndex == 0 
         ? FloatingActionButton.extended(
-            onPressed: () => _showAddTaskSheet(context),
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              builder: (context) => const AddTimeTaskSheet(),
+            ),
             label: const Text('Zadanie czasowe'),
             icon: const Icon(Icons.add_alarm),
           )
