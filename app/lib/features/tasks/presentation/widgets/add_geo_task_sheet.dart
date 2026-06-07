@@ -57,7 +57,7 @@ class _AddGeoTaskSheetState extends ConsumerState<AddGeoTaskSheet> {
         
         // Pop dialog
         if (mounted && context.mounted) {
-          Navigator.pop(context);
+          Navigator.pop(context, true);
           
           // Pokaż success snackbar
           ScaffoldMessenger.of(context).showSnackBar(

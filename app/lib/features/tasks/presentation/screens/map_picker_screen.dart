@@ -22,8 +22,8 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
     super.dispose();
   }
 
-  void _confirmSelection(LatLng center, double radius) {
-    showModalBottomSheet(
+  Future<void> _confirmSelection(LatLng center, double radius) async {
+    final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -36,6 +36,10 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
         radius: radius,
       ),
     );
+
+    if (result == true && mounted) {
+      Navigator.pop(context);
+    }
   }
 
   Future<void> _goToCurrentLocation() async {

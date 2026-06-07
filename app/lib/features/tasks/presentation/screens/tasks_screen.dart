@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:app/features/tasks/domain/entities/task.dart';
 import 'package:app/features/tasks/data/repositories/task_repository_impl.dart';
-import 'package:app/features/auth/presentation/providers/auth_state_provider.dart';
 import '../providers/task_list_provider.dart';
 import '../widgets/task_list_item.dart';
 
@@ -27,6 +25,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   Widget build(BuildContext context) {
     final timeTasks = ref.watch(timeTasksProvider);
     final geoTasks = ref.watch(geoTasksProvider);
+    final completedTasks = ref.watch(completedTasksProvider);
     final allTasksAsync = ref.watch(allTasksProvider);
 
     return Scaffold(
@@ -41,11 +40,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                 icon: const Icon(Icons.refresh),
                 tooltip: 'Synchronizuj',
                 onPressed: () => ref.read(taskRepositoryProvider).syncTasks(),
-              ),
-              IconButton(
-                icon: const Icon(Icons.logout),
-                tooltip: 'Wyloguj',
-                onPressed: () => ref.read(authStateProvider.notifier).logout(),
               ),
             ],
             bottom: PreferredSize(
@@ -104,6 +98,15 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) => TaskListItem(task: geoTasks[index]),
                         childCount: geoTasks.length,
+                      ),
+                    ),
+                  ],
+                  if (completedTasks.isNotEmpty) ...[
+                    _SectionHeader(title: 'Wykonane'),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => TaskListItem(task: completedTasks[index]),
+                        childCount: completedTasks.length,
                       ),
                     ),
                   ],

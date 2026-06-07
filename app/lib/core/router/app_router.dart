@@ -5,6 +5,7 @@ import 'package:app/features/auth/presentation/providers/auth_state_provider.dar
 import 'package:app/features/auth/presentation/screens/login_screen.dart';
 import 'package:app/features/auth/presentation/screens/register_screen.dart';
 import 'package:app/features/tasks/presentation/screens/main_screen.dart';
+import 'package:app/features/tasks/presentation/screens/map_picker_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -48,6 +49,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/home',
         builder: (context, state) => const MainScreen(),
+      ),
+      GoRoute(
+        path: '/map-picker',
+        builder: (context, state) => const MapPickerScreen(),
       ),
     ],
   );

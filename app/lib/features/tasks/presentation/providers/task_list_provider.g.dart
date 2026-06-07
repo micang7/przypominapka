@@ -212,7 +212,7 @@ final class TimeTasksProvider
   }
 }
 
-String _$timeTasksHash() => r'a0bffbac50b70225d868eb85af74e204829e4b86';
+String _$timeTasksHash() => r'99505c88a2ddafbe5fc202064cf306193a83b085';
 
 @ProviderFor(geoTasks)
 final geoTasksProvider = GeoTasksProvider._();
@@ -253,4 +253,45 @@ final class GeoTasksProvider
   }
 }
 
-String _$geoTasksHash() => r'9acf3661a60ab5151d7dd9caaa74d9a03da99aed';
+String _$geoTasksHash() => r'785d2cd937ea4afdbff6c5733ead55aaf8804875';
+
+@ProviderFor(completedTasks)
+final completedTasksProvider = CompletedTasksProvider._();
+
+final class CompletedTasksProvider
+    extends $FunctionalProvider<List<Task>, List<Task>, List<Task>>
+    with $Provider<List<Task>> {
+  CompletedTasksProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'completedTasksProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$completedTasksHash();
+
+  @$internal
+  @override
+  $ProviderElement<List<Task>> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  List<Task> create(Ref ref) {
+    return completedTasks(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<Task> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<Task>>(value),
+    );
+  }
+}
+
+String _$completedTasksHash() => r'33a434cbf1e32e08658d54664e69db28c52961fa';

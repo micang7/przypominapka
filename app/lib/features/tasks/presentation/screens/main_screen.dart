@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:app/core/services/permissions_service.dart';
 import 'package:app/features/auth/presentation/providers/auth_state_provider.dart';
 import 'package:app/features/tasks/presentation/screens/tasks_screen.dart';
 import 'package:app/features/tasks/presentation/widgets/add_time_task_sheet.dart';
-import 'package:app/features/tasks/presentation/screens/map_picker_screen.dart';
+import 'package:app/features/tasks/presentation/screens/tasks_map_screen.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -18,7 +19,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   final List<Widget> _screens = [
     const TasksScreen(),
-    const MapPickerScreen(),
+    const TasksMapScreen(),
   ];
 
   @override
@@ -78,7 +79,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             label: const Text('Zadanie czasowe'),
             icon: const Icon(Icons.add_alarm),
           )
-        : null,
+        : FloatingActionButton.extended(
+            onPressed: () => context.push('/map-picker'),
+            label: const Text('Zadanie regionalne'),
+            icon: const Icon(Icons.add_location_alt),
+          ),
     );
   }
 }

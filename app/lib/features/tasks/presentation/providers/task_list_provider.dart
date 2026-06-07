@@ -46,11 +46,17 @@ List<Task> filteredTasks(Ref ref) {
 @riverpod
 List<Task> timeTasks(Ref ref) {
   final filtered = ref.watch(filteredTasksProvider);
-  return filtered.where((t) => t.isTimeBased).toList();
+  return filtered.where((t) => t.isTimeBased && !t.completed).toList();
 }
 
 @riverpod
 List<Task> geoTasks(Ref ref) {
   final filtered = ref.watch(filteredTasksProvider);
-  return filtered.where((t) => t.isGeoBased).toList();
+  return filtered.where((t) => t.isGeoBased && !t.completed).toList();
+}
+
+@riverpod
+List<Task> completedTasks(Ref ref) {
+  final filtered = ref.watch(filteredTasksProvider);
+  return filtered.where((t) => t.completed).toList();
 }
