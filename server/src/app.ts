@@ -50,15 +50,14 @@ if (env.NODE_ENV === 'production') {
 
 createExpressEndpoints(apiContract, router, app, {
   globalMiddleware: [
-    (req, res, next) => {
+    async (req, res, next) => {
       if (
         'metadata' in req.tsRestRoute &&
         req.tsRestRoute.metadata &&
         req.tsRestRoute.metadata.security.some((s) => 'bearerAuth' in s)
-      ) {
-        return jwtAuth(req, res, next);
-      }
-      next();
+      )
+        await jwtAuth(req, res, next);
+      else next();
     },
   ],
   requestValidationErrorHandler(err, _req, _res, next) {
