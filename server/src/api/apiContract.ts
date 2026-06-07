@@ -11,6 +11,7 @@ import { SyncResDto } from './dtos/sync/sync.res.dto.js';
 import { SyncDto } from './dtos/sync/sync.dto.js';
 import z from 'zod';
 import { AuthChangePasswordDto } from './dtos/auth/authChangePassword.dto.js';
+import { SessionsUpdateFcmTokenDto } from './dtos/sessions/sessionsUpdateFcmToken.dto.js';
 
 const c = initContract();
 
@@ -39,8 +40,8 @@ export const apiContract = c.router(
         path: '/auth/login',
         responses: {
           200: AuthLoginResDto,
-          401: ErrorResDto,
           400: ValidationErrorResDto,
+          401: ErrorResDto,
           ...globalResponses,
         },
         body: AuthLoginDto,
@@ -52,6 +53,7 @@ export const apiContract = c.router(
         metadata: { security: [{ bearerAuth: [] }] },
         responses: {
           204: c.noBody(),
+          400: ValidationErrorResDto,
           401: ErrorResDto,
           ...globalResponses,
         },
@@ -64,6 +66,7 @@ export const apiContract = c.router(
         path: '/auth/refresh',
         responses: {
           200: AuthRefreshResDto,
+          400: ValidationErrorResDto,
           401: ErrorResDto,
           ...globalResponses,
         },
@@ -124,6 +127,21 @@ export const apiContract = c.router(
         },
         body: SyncDto,
         summary: 'Dwukierunkowa synchronizacja zadań',
+      },
+    },
+    sessions: {
+      updateFcmToken: {
+        method: 'PATCH',
+        path: '/sessions/fcm-token',
+        metadata: { security: [{ bearerAuth: [] }] },
+        responses: {
+          204: c.noBody(),
+          400: ValidationErrorResDto,
+          401: ErrorResDto,
+          ...globalResponses,
+        },
+        body: SessionsUpdateFcmTokenDto,
+        summary: 'Aktualizacja tokenu FCM aktualnego urządzenia',
       },
     },
   },
