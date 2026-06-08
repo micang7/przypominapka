@@ -22,6 +22,8 @@ describe('Auth Module', () => {
         login: 'testuser',
         password: 'password123',
         confirmPassword: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(201);
@@ -40,6 +42,8 @@ describe('Auth Module', () => {
         login: 'testuser',
         password: 'password123',
         confirmPassword: 'different',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(400);
@@ -53,12 +57,16 @@ describe('Auth Module', () => {
         login: 'duplicate',
         password: 'password123',
         confirmPassword: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       const res = await api.post('/api/v1/auth/register').send({
         login: 'duplicate',
         password: 'password123',
         confirmPassword: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(409);
@@ -72,6 +80,8 @@ describe('Auth Module', () => {
         login: 'dbcheck',
         password: 'password123',
         confirmPassword: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       const usersInDb = await db.select().from(users);
@@ -101,6 +111,8 @@ describe('Auth Module', () => {
       const res = await api.post('/api/v1/auth/login').send({
         login: 'testuser',
         password: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(200);
@@ -118,6 +130,8 @@ describe('Auth Module', () => {
       const res = await api.post('/api/v1/auth/login').send({
         login: 'unknown',
         password: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(401);
@@ -129,6 +143,8 @@ describe('Auth Module', () => {
       const res = await api.post('/api/v1/auth/login').send({
         login: 'testuser',
         password: 'wrongpassword',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(401);
@@ -140,6 +156,8 @@ describe('Auth Module', () => {
       const res = await api.post('/api/v1/auth/login').send({
         login: '',
         password: '',
+        deviceId: '',
+        fcmToken: '',
       });
 
       expect(res.status).toBe(400);
@@ -171,7 +189,7 @@ describe('Auth Module', () => {
 
       userId = user!.id;
 
-      const tokens = await generateTokens(userId);
+      const tokens = await generateTokens(userId, 'device123', 'token123');
       accessToken = tokens.accessToken;
       refreshToken = tokens.refreshToken;
     });
@@ -230,8 +248,8 @@ describe('Auth Module', () => {
     });
 
     it('removes only matching session when multiple sessions exist', async () => {
-      await generateTokens(userId);
-      await generateTokens(userId);
+      await generateTokens(userId, 'device123', 'token123');
+      await generateTokens(userId, 'device123', 'token123');
 
       const allSessions = await db
         .select()
@@ -278,7 +296,7 @@ describe('Auth Module', () => {
 
       userId = user!.id;
 
-      const tokens = await generateTokens(userId);
+      const tokens = await generateTokens(userId, 'device123', 'token123');
       accessToken = tokens.accessToken;
       refreshToken = tokens.refreshToken;
     });
@@ -318,9 +336,9 @@ describe('Auth Module', () => {
       expect(isNewTokenMatching).toBe(true);
     });
 
-    it('fails when refresh token does not match any session', async () => {
+    it('fails and wipes all sessions (reuse detection) when refresh token does not match any session', async () => {
       await db.delete(sessions).where(eq(sessions.userId, userId));
-      await generateTokens(userId);
+      await generateTokens(userId, 'device123', 'token123');
 
       const res = await api
         .post('/api/v1/auth/refresh')
@@ -335,7 +353,7 @@ describe('Auth Module', () => {
         .from(sessions)
         .where(eq(sessions.userId, userId));
 
-      expect(sessionsInDb.length).toBe(1);
+      expect(sessionsInDb.length).toBe(0);
     });
 
     it('fails when x-refresh-token header is missing', async () => {
@@ -347,8 +365,12 @@ describe('Auth Module', () => {
     });
 
     it('removes only the matched session when multiple sessions exist', async () => {
-      const secondSessionTokens = await generateTokens(userId);
-      await generateTokens(userId);
+      const secondSessionTokens = await generateTokens(
+        userId,
+        'device123',
+        'token123',
+      );
+      await generateTokens(userId, 'device123', 'token123');
 
       const initialSessions = await db
         .select()
@@ -379,6 +401,96 @@ describe('Auth Module', () => {
         }
       }
       expect(isSecondSessionStillValid).toBe(true);
+    });
+  });
+
+  describe('POST /auth/change-password', () => {
+    let userId: number;
+    let accessToken: string;
+    let refreshToken: string;
+    let passwordHash: string;
+
+    beforeAll(async () => {
+      passwordHash = await hash('oldPassword123');
+    });
+
+    beforeEach(async () => {
+      const [user] = await db
+        .insert(users)
+        .values({
+          login: 'changePwdUser',
+          passwordHash,
+        })
+        .returning();
+
+      userId = user!.id;
+
+      const tokens = await generateTokens(userId, 'device123', 'token123');
+      accessToken = tokens.accessToken;
+      refreshToken = tokens.refreshToken;
+    });
+
+    it('changes password successfully and invalidates other sessions', async () => {
+      await generateTokens(userId, 'device123', 'token123');
+
+      const res = await api
+        .post('/api/v1/auth/change-password')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .set('x-refresh-token', refreshToken)
+        .send({
+          oldPassword: 'oldPassword123',
+          newPassword: 'newPassword123',
+          newConfirmPassword: 'newPassword123',
+        });
+
+      expect(res.status).toBe(204);
+
+      const [updatedUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+      const isNewPasswordValid = await verify(
+        updatedUser!.passwordHash,
+        'newPassword123',
+      );
+      expect(isNewPasswordValid).toBe(true);
+
+      const finalSessions = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.userId, userId));
+      expect(finalSessions.length).toBe(1);
+
+      const isCurrentSessionAlive = await verify(
+        finalSessions[0]!.tokenHash,
+        refreshToken,
+      );
+      expect(isCurrentSessionAlive).toBe(true);
+    });
+
+    it('fails when old password is incorrect', async () => {
+      const res = await api
+        .post('/api/v1/auth/change-password')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .set('x-refresh-token', refreshToken)
+        .send({
+          oldPassword: 'wrongOldPassword',
+          newPassword: 'newPassword123',
+          newConfirmPassword: 'newPassword123',
+        });
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe('Invalid password');
+
+      const [userInDb] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+      const isOldPasswordStillValid = await verify(
+        userInDb!.passwordHash,
+        'oldPassword123',
+      );
+      expect(isOldPasswordStillValid).toBe(true);
     });
   });
 });

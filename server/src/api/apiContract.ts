@@ -10,8 +10,15 @@ import { UserFindOneResDto } from './dtos/users/userFindOne.res.dto.js';
 import { SyncResDto } from './dtos/sync/sync.res.dto.js';
 import { SyncDto } from './dtos/sync/sync.dto.js';
 import z from 'zod';
+import { AuthChangePasswordDto } from './dtos/auth/authChangePassword.dto.js';
+import { SessionsUpdateFcmTokenDto } from './dtos/sessions/sessionsUpdateFcmToken.dto.js';
 
 const c = initContract();
+
+const globalResponses = {
+  429: ErrorResDto,
+  500: ErrorResDto,
+};
 
 export const apiContract = c.router(
   {
@@ -23,7 +30,7 @@ export const apiContract = c.router(
           201: AuthRegisterResDto,
           400: ValidationErrorResDto,
           409: ErrorResDto,
-          500: ErrorResDto,
+          ...globalResponses,
         },
         body: AuthRegisterDto,
         summary: 'Rejestracja nowego użytkownika',
@@ -33,9 +40,9 @@ export const apiContract = c.router(
         path: '/auth/login',
         responses: {
           200: AuthLoginResDto,
-          401: ErrorResDto,
           400: ValidationErrorResDto,
-          500: ErrorResDto,
+          401: ErrorResDto,
+          ...globalResponses,
         },
         body: AuthLoginDto,
         summary: 'Logowanie do aplikacji',
@@ -46,8 +53,9 @@ export const apiContract = c.router(
         metadata: { security: [{ bearerAuth: [] }] },
         responses: {
           204: c.noBody(),
+          400: ValidationErrorResDto,
           401: ErrorResDto,
-          500: ErrorResDto,
+          ...globalResponses,
         },
         body: c.noBody(),
         headers: z.object({ 'x-refresh-token': z.string().min(1) }),
@@ -58,12 +66,27 @@ export const apiContract = c.router(
         path: '/auth/refresh',
         responses: {
           200: AuthRefreshResDto,
+          400: ValidationErrorResDto,
           401: ErrorResDto,
-          500: ErrorResDto,
+          ...globalResponses,
         },
         body: c.noBody(),
         headers: z.object({ 'x-refresh-token': z.string().min(1) }),
         summary: 'Odświeżenie tokenów access i refresh',
+      },
+      changePassword: {
+        method: 'POST',
+        path: '/auth/change-password',
+        metadata: { security: [{ bearerAuth: [] }] },
+        responses: {
+          204: c.noBody(),
+          400: ValidationErrorResDto,
+          401: ErrorResDto,
+          ...globalResponses,
+        },
+        body: AuthChangePasswordDto,
+        headers: z.object({ 'x-refresh-token': z.string().min(1) }),
+        summary: 'Zmiana hasła użytkownika',
       },
     },
     users: {
@@ -74,7 +97,7 @@ export const apiContract = c.router(
         responses: {
           200: UserFindOneResDto,
           401: ErrorResDto,
-          500: ErrorResDto,
+          ...globalResponses,
         },
         summary: 'Pobranie profilu aktualnie zalogowanego użytkownika',
       },
@@ -85,7 +108,7 @@ export const apiContract = c.router(
         responses: {
           204: c.noBody(),
           401: ErrorResDto,
-          500: ErrorResDto,
+          ...globalResponses,
         },
         body: c.noBody(),
         summary: 'Usunięcie konta użytkownika',
@@ -100,10 +123,25 @@ export const apiContract = c.router(
           200: SyncResDto,
           400: ValidationErrorResDto,
           401: ErrorResDto,
-          500: ErrorResDto,
+          ...globalResponses,
         },
         body: SyncDto,
         summary: 'Dwukierunkowa synchronizacja zadań',
+      },
+    },
+    sessions: {
+      updateFcmToken: {
+        method: 'PATCH',
+        path: '/sessions/fcm-token',
+        metadata: { security: [{ bearerAuth: [] }] },
+        responses: {
+          204: c.noBody(),
+          400: ValidationErrorResDto,
+          401: ErrorResDto,
+          ...globalResponses,
+        },
+        body: SessionsUpdateFcmTokenDto,
+        summary: 'Aktualizacja tokenu FCM aktualnego urządzenia',
       },
     },
   },

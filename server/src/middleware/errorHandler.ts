@@ -15,7 +15,7 @@ export function errorHandler(
       ...(err.paths && { paths: err.paths }),
     });
   } else {
-    appLogger.error({ error: err }, 'Unexpected error');
+    appLogger.error({ err }, 'Unexpected error');
     res.status(500).json({
       message: 'Internal Server Error',
     });

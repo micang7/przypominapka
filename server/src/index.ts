@@ -10,8 +10,8 @@ async function bootstrap() {
     app.listen(env.PORT, () => {
       appLogger.info(`Server running on port ${env.PORT}`);
     });
-  } catch (error) {
-    appLogger.fatal({ error }, 'Database connection failed');
+  } catch (err) {
+    appLogger.fatal({ err }, 'Database connection failed');
     process.exit(1);
   }
 }

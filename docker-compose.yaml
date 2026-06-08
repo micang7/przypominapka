@@ -12,8 +12,10 @@ services:
   db:
     container_name: postgres_db
     image: postgres:16
-    env_file:
-      - ./server/.env
+    environment:
+      POSTGRES_DB: dev
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
     ports:
       - "5433:5432"
     volumes:
@@ -23,8 +25,10 @@ services:
     container_name: postgres_db_test
     image: postgres:16
     profiles: ["test"]
-    env_file:
-      - ./server/.env.test
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
     ports:
       - "5434:5432"
     tmpfs:

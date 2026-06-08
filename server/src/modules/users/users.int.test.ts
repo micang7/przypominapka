@@ -34,7 +34,7 @@ describe('Users Module', () => {
 
       userId = user!.id;
 
-      const tokens = await generateTokens(userId);
+      const tokens = await generateTokens(userId, 'device123', 'token123');
       accessToken = tokens.accessToken;
     });
 
@@ -77,7 +77,7 @@ describe('Users Module', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .send();
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(401);
       expect(res.body).toHaveProperty('message');
     });
   });
@@ -97,7 +97,7 @@ describe('Users Module', () => {
 
       userId = user!.id;
 
-      const tokens = await generateTokens(userId);
+      const tokens = await generateTokens(userId, 'device123', 'token123');
       accessToken = tokens.accessToken;
     });
 
@@ -126,6 +126,7 @@ describe('Users Module', () => {
       const res = await api.delete('/api/v1/users/me').send();
 
       expect(res.status).toBe(401);
+      expect(res.body).toHaveProperty('message');
 
       const userInDb = await db
         .select()
@@ -142,8 +143,8 @@ describe('Users Module', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .send();
 
-      expect(res.status).toBe(404);
-      expect(res.body.message).toBe('User not found');
+      expect(res.status).toBe(401);
+      expect(res.body).toHaveProperty('message');
     });
   });
 });
