@@ -1,9 +1,21 @@
 import { db } from '../../db/client.js';
-import { tasks } from '../../db/schema.js';
-import { and, eq, gt, inArray, notInArray } from 'drizzle-orm';
+import { sessions, tasks } from '../../db/schema.js';
+import {
+  and,
+  eq,
+  gt,
+  inArray,
+  isNotNull,
+  not,
+  notInArray,
+  sql,
+} from 'drizzle-orm';
 import type { SyncDtoType } from '../../api/dtos/sync/sync.dto.js';
 import type { SyncResDtoType } from '../../api/dtos/sync/sync.res.dto.js';
 import { appLogger } from '../../config/logger.js';
+import admin from 'firebase-admin';
+
+admin.initializeApp();
 
 class SyncService {
   async sync(userId: number, data: SyncDtoType): Promise<SyncResDtoType> {
@@ -60,24 +72,40 @@ class SyncService {
           { userId, count: changes.updated.length },
           'Processing client updated tasks',
         );
-        for (const task of changes.updated) {
-          await tx
-            .update(tasks)
-            .set({
-              title: task.title,
-              description: task.description,
-              type: task.type,
-              completed: task.completed,
-              timeTriggerAt: task.timeTriggerAt
-                ? new Date(task.timeTriggerAt)
-                : null,
-              geoTriggerLatitude: task.geoTriggerLatitude,
-              geoTriggerLongitude: task.geoTriggerLongitude,
-              geoTriggerRadius: task.geoTriggerRadius,
-              updatedAt: syncAt,
-            })
-            .where(and(eq(tasks.id, task.id), eq(tasks.userId, userId)));
-        }
+        const tasksToUpdate = changes.updated.map((task) => ({
+          id: task.id,
+          userId: userId,
+          title: task.title || '',
+          description: task.description,
+          type: task.type,
+          completed: false,
+          timeTriggerAt: task.timeTriggerAt
+            ? new Date(task.timeTriggerAt)
+            : null,
+          geoTriggerLatitude: task.geoTriggerLatitude,
+          geoTriggerLongitude: task.geoTriggerLongitude,
+          geoTriggerRadius: task.geoTriggerRadius,
+          createdAt: syncAt,
+          updatedAt: syncAt,
+        }));
+
+        await tx
+          .insert(tasks)
+          .values(tasksToUpdate)
+          .onConflictDoUpdate({
+            target: tasks.id,
+            set: {
+              title: sql`excluded.title`,
+              description: sql`excluded.description`,
+              type: sql`excluded.type`,
+              completed: sql`excluded.completed`,
+              timeTriggerAt: sql`excluded.time_trigger_at`,
+              geoTriggerLatitude: sql`excluded.geo_trigger_latitude`,
+              geoTriggerLongitude: sql`excluded.geo_trigger_longitude`,
+              geoTriggerRadius: sql`excluded.geo_trigger_radius`,
+              updatedAt: sql`excluded.updated_at`,
+            },
+          });
       }
 
       // C. DELETED (Zadania usunięte na kliencie)
@@ -151,6 +179,46 @@ class SyncService {
       } else {
         serverUpdated.push(formattedTask);
       }
+    }
+
+    try {
+      const activeOtherSessions = await db
+        .select({ fcmToken: sessions.fcmToken })
+        .from(sessions)
+        .where(
+          and(
+            eq(sessions.userId, userId),
+            not(eq(sessions.deviceId, data.deviceId)),
+            isNotNull(sessions.fcmToken),
+          ),
+        );
+
+      appLogger.debug(
+        { userId, targetDevices: activeOtherSessions.length },
+        'Other user devices found',
+      );
+
+      if (activeOtherSessions.length > 0) {
+        const message = {
+          data: {
+            type: 'SYNC_REQUEST',
+            timestamp: new Date().toISOString(),
+          },
+          tokens: activeOtherSessions.map((s) => s.fcmToken!),
+        };
+
+        const response = await admin.messaging().sendEachForMulticast(message);
+
+        appLogger.info(
+          { userId, targetDevices: response.successCount },
+          'FCM synchronization request sent to other devices',
+        );
+      }
+    } catch (err) {
+      appLogger.error(
+        { userId, err },
+        'Failed to send FCM synchronization request',
+      );
     }
 
     appLogger.info(

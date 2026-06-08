@@ -22,6 +22,8 @@ describe('Auth Module', () => {
         login: 'testuser',
         password: 'password123',
         confirmPassword: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(201);
@@ -40,6 +42,8 @@ describe('Auth Module', () => {
         login: 'testuser',
         password: 'password123',
         confirmPassword: 'different',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(400);
@@ -53,12 +57,16 @@ describe('Auth Module', () => {
         login: 'duplicate',
         password: 'password123',
         confirmPassword: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       const res = await api.post('/api/v1/auth/register').send({
         login: 'duplicate',
         password: 'password123',
         confirmPassword: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(409);
@@ -72,6 +80,8 @@ describe('Auth Module', () => {
         login: 'dbcheck',
         password: 'password123',
         confirmPassword: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       const usersInDb = await db.select().from(users);
@@ -101,6 +111,8 @@ describe('Auth Module', () => {
       const res = await api.post('/api/v1/auth/login').send({
         login: 'testuser',
         password: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(200);
@@ -118,6 +130,8 @@ describe('Auth Module', () => {
       const res = await api.post('/api/v1/auth/login').send({
         login: 'unknown',
         password: 'password123',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(401);
@@ -129,6 +143,8 @@ describe('Auth Module', () => {
       const res = await api.post('/api/v1/auth/login').send({
         login: 'testuser',
         password: 'wrongpassword',
+        deviceId: 'device123',
+        fcmToken: 'token123',
       });
 
       expect(res.status).toBe(401);
@@ -140,6 +156,8 @@ describe('Auth Module', () => {
       const res = await api.post('/api/v1/auth/login').send({
         login: '',
         password: '',
+        deviceId: '',
+        fcmToken: '',
       });
 
       expect(res.status).toBe(400);
@@ -171,7 +189,7 @@ describe('Auth Module', () => {
 
       userId = user!.id;
 
-      const tokens = await generateTokens(userId);
+      const tokens = await generateTokens(userId, 'device123', 'token123');
       accessToken = tokens.accessToken;
       refreshToken = tokens.refreshToken;
     });
@@ -230,8 +248,8 @@ describe('Auth Module', () => {
     });
 
     it('removes only matching session when multiple sessions exist', async () => {
-      await generateTokens(userId);
-      await generateTokens(userId);
+      await generateTokens(userId, 'device123', 'token123');
+      await generateTokens(userId, 'device123', 'token123');
 
       const allSessions = await db
         .select()
@@ -278,7 +296,7 @@ describe('Auth Module', () => {
 
       userId = user!.id;
 
-      const tokens = await generateTokens(userId);
+      const tokens = await generateTokens(userId, 'device123', 'token123');
       accessToken = tokens.accessToken;
       refreshToken = tokens.refreshToken;
     });
@@ -320,7 +338,7 @@ describe('Auth Module', () => {
 
     it('fails and wipes all sessions (reuse detection) when refresh token does not match any session', async () => {
       await db.delete(sessions).where(eq(sessions.userId, userId));
-      await generateTokens(userId);
+      await generateTokens(userId, 'device123', 'token123');
 
       const res = await api
         .post('/api/v1/auth/refresh')
@@ -347,8 +365,12 @@ describe('Auth Module', () => {
     });
 
     it('removes only the matched session when multiple sessions exist', async () => {
-      const secondSessionTokens = await generateTokens(userId);
-      await generateTokens(userId);
+      const secondSessionTokens = await generateTokens(
+        userId,
+        'device123',
+        'token123',
+      );
+      await generateTokens(userId, 'device123', 'token123');
 
       const initialSessions = await db
         .select()
@@ -403,13 +425,13 @@ describe('Auth Module', () => {
 
       userId = user!.id;
 
-      const tokens = await generateTokens(userId);
+      const tokens = await generateTokens(userId, 'device123', 'token123');
       accessToken = tokens.accessToken;
       refreshToken = tokens.refreshToken;
     });
 
     it('changes password successfully and invalidates other sessions', async () => {
-      await generateTokens(userId);
+      await generateTokens(userId, 'device123', 'token123');
 
       const res = await api
         .post('/api/v1/auth/change-password')

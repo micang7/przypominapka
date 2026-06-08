@@ -10,6 +10,7 @@ export const SyncDto = z.object({
     updated: z.array(PushedUpdatedTaskDto),
     deleted: z.array(DeletedTaskDto),
   }),
+  deviceId: z.string().min(1),
 });
 
 export type SyncDtoType = z.infer<typeof SyncDto>;
