@@ -17,11 +17,7 @@ const envSchema = z.object({
     .enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent'])
     .default('info'),
   PORT: z.coerce.number().int().positive().default(3000),
-  POSTGRES_HOST: z.string().min(1),
-  POSTGRES_PORT: z.coerce.number().int().positive(),
-  POSTGRES_DB: z.string().min(1),
-  POSTGRES_USER: z.string().min(1),
-  POSTGRES_PASSWORD: z.string().min(1),
+  DATABASE_URL: z.string().url().min(1),
   JWT_SECRET: z.string().min(1),
   JWT_REFRESH_SECRET: z.string().min(1),
   JWT_EXPIRES_IN: z.custom<StringValue>(),

@@ -10,6 +10,7 @@ import { UserFindOneResDto } from './dtos/users/userFindOne.res.dto.js';
 import { SyncResDto } from './dtos/sync/sync.res.dto.js';
 import { SyncDto } from './dtos/sync/sync.dto.js';
 import z from 'zod';
+import { AuthChangePasswordDto } from './dtos/auth/authChangePassword.dto.js';
 
 const c = initContract();
 
@@ -64,6 +65,20 @@ export const apiContract = c.router(
         body: c.noBody(),
         headers: z.object({ 'x-refresh-token': z.string().min(1) }),
         summary: 'Odświeżenie tokenów access i refresh',
+      },
+      changePassword: {
+        method: 'POST',
+        path: '/auth/change-password',
+        metadata: { security: [{ bearerAuth: [] }] },
+        responses: {
+          204: c.noBody(),
+          400: ValidationErrorResDto,
+          401: ErrorResDto,
+          500: ErrorResDto,
+        },
+        body: AuthChangePasswordDto,
+        headers: z.object({ 'x-refresh-token': z.string().min(1) }),
+        summary: 'Zmiana hasła użytkownika',
       },
     },
     users: {

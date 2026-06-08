@@ -10,9 +10,10 @@ import { appLogger } from '../../config/logger.js';
 import { assertExists } from '../../utils/assertExists.js';
 import type { AuthLoginDtoType } from '../../api/dtos/auth/authLogin.dto.js';
 import type { AuthLoginResDtoType } from '../../api/dtos/auth/authLogin.res.dto.js';
-import { eq } from 'drizzle-orm';
+import { and, eq, not } from 'drizzle-orm';
 import type { AuthRefreshResDtoType } from '../../api/dtos/auth/authRefresh.res.dto.js';
 import { decodeToken } from '../../utils/decodeToken.js';
+import type { AuthChangePasswordDtoType } from '../../api/dtos/auth/authChangePassword.dto.js';
 
 class AuthService {
   async register(data: AuthRegisterDtoType): Promise<AuthRegisterResDtoType> {
@@ -156,6 +157,9 @@ class AuthService {
 
     if (!activeSession) {
       appLogger.warn({ userId }, 'Refresh token blocked (no matching session)');
+
+      await db.delete(sessions).where(eq(sessions.userId, userId));
+
       throw new UnauthorizedError('Invalid or expired refresh token');
     }
 
@@ -176,6 +180,87 @@ class AuthService {
     appLogger.info({ userId }, 'Token refresh completed');
 
     return tokens;
+  }
+
+  async changePassword(
+    userId: number,
+    refreshToken: string,
+    data: AuthChangePasswordDtoType,
+  ): Promise<void> {
+    appLogger.debug({ userId: userId }, 'Password change initiated');
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
+    if (!user) {
+      throw new UnauthorizedError('Invalid password');
+    }
+
+    const isPasswordValid = await verify(user.passwordHash, data.oldPassword);
+    if (!isPasswordValid) {
+      throw new UnauthorizedError('Invalid password');
+    }
+
+    const userSessions = await db
+      .select()
+      .from(sessions)
+      .where(eq(sessions.userId, userId));
+
+    appLogger.debug(
+      { userId, sessions: userSessions.length },
+      'User sessions found',
+    );
+
+    let activeSession = null;
+
+    for (const session of userSessions) {
+      const isMatch = await verify(session.tokenHash, refreshToken);
+      if (isMatch) {
+        activeSession = session;
+        break;
+      }
+    }
+
+    if (!activeSession) {
+      appLogger.warn(
+        { userId },
+        'Password change blocked (no matching session)',
+      );
+
+      await db.delete(sessions).where(eq(sessions.userId, userId));
+
+      throw new UnauthorizedError('Invalid or expired refresh token');
+    }
+
+    appLogger.debug(
+      { userId, sessionId: activeSession.id },
+      'Matching session found',
+    );
+
+    const passwordHash = await hash(data.newPassword);
+
+    await db.transaction(async (tx) => {
+      await tx.update(users).set({ passwordHash }).where(eq(users.id, userId));
+
+      await tx
+        .delete(sessions)
+        .where(
+          and(
+            eq(sessions.userId, userId),
+            not(eq(sessions.id, activeSession.id)),
+          ),
+        );
+
+      appLogger.debug(
+        { userId, sessionId: activeSession.id },
+        'Old session deleted',
+      );
+
+      appLogger.info(
+        { userId: userId, login: user.login },
+        'Password change completed',
+      );
+    });
   }
 }
 
