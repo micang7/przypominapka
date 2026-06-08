@@ -18,14 +18,18 @@ part 'task_repository_impl.g.dart';
 class TaskRepositoryImpl implements ITaskRepository {
   final ITaskLocalDatasource localDatasource;
   final ApiClient apiClient;
-  final Ref ref;
   final DeviceService deviceService;
+  final NotificationService notificationService;
+  final GeofencingService geofencingService;
+  final AuthLocalDatasource authLocalDatasource;
 
   TaskRepositoryImpl({
     required this.localDatasource,
     required this.apiClient,
-    required this.ref,
     required this.deviceService,
+    required this.notificationService,
+    required this.geofencingService,
+    required this.authLocalDatasource,
   });
 
   @override
@@ -38,14 +42,14 @@ class TaskRepositoryImpl implements ITaskRepository {
   @override
   Future<void> syncTasks() async {
     try {
-      final lastSyncAtStr = await _getMetadata('last_sync_at');
+      final lastSyncAtStr = await localDatasource.getMetadata('last_sync_at');
       final lastSyncAt = lastSyncAtStr != null 
           ? DateTime.parse(lastSyncAtStr).toUtc()
           : DateTime.fromMillisecondsSinceEpoch(0).toUtc();
 
       final deviceId = await deviceService.getDeviceId();
 
-      final token = await ref.read(authLocalDatasourceProvider).getAccessToken();
+      final token = await authLocalDatasource.getAccessToken();
       if (token != null) apiClient.setToken(token);
 
       final pendingTasks = await localDatasource.getPendingSyncTasks();
@@ -65,7 +69,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       for (final task in pendingTasks) {
         await localDatasource.markAsSynced(task.id);
       }
-      await _setMetadata('last_sync_at', response.sync_at.toUtc().toIso8601String());
+      await localDatasource.setMetadata('last_sync_at', response.sync_at.toUtc().toIso8601String());
     } catch (_) {}
   }
 
@@ -97,8 +101,8 @@ class TaskRepositoryImpl implements ITaskRepository {
       final existing = await localDatasource.getTaskById(deleted.id);
       if (existing != null) {
         // Usuwamy triggery przed usunięciem z bazy
-        ref.read(notificationServiceProvider).cancelNotification(_getNotificationId(deleted.id));
-        ref.read(geofencingServiceProvider).removeGeofence(deleted.id, existing.title);
+        notificationService.cancelNotification(_getNotificationId(deleted.id));
+        geofencingService.removeGeofence(deleted.id, existing.title);
         await localDatasource.hardDeleteTask(deleted.id);
       }
     }
@@ -124,8 +128,8 @@ class TaskRepositoryImpl implements ITaskRepository {
   Future<void> deleteTask(String id) async {
     final entry = await localDatasource.getTaskById(id);
     if (entry != null) {
-      ref.read(notificationServiceProvider).cancelNotification(_getNotificationId(id));
-      ref.read(geofencingServiceProvider).removeGeofence(id, entry.title);
+      notificationService.cancelNotification(_getNotificationId(id));
+      geofencingService.removeGeofence(id, entry.title);
     }
     await localDatasource.deleteTask(id);
     unawaited(syncTasks());
@@ -183,18 +187,18 @@ class TaskRepositoryImpl implements ITaskRepository {
 
   void _updateTaskTriggers(String id, String title, String? description, bool completed, DateTime? timeAt, double? lat, double? lng, double? radius) {
     if (!completed && timeAt != null) {
-      ref.read(notificationServiceProvider).scheduleNotification(
+      notificationService.scheduleNotification(
         id: _getNotificationId(id),
         title: 'Zadanie: ' + title,
         body: (description != null && description.isNotEmpty) ? description : 'Czas na realizację!',
         scheduledDate: timeAt,
       );
     } else {
-      ref.read(notificationServiceProvider).cancelNotification(_getNotificationId(id));
+      notificationService.cancelNotification(_getNotificationId(id));
     }
 
     if (!completed && lat != null && lng != null && radius != null) {
-      ref.read(geofencingServiceProvider).registerGeofence(
+      geofencingService.registerGeofence(
         id: id,
         title: title,
         lat: lat,
@@ -202,7 +206,7 @@ class TaskRepositoryImpl implements ITaskRepository {
         radius: radius,
       );
     } else {
-      ref.read(geofencingServiceProvider).removeGeofence(id, title);
+      geofencingService.removeGeofence(id, title);
     }
   }
 
@@ -212,14 +216,14 @@ class TaskRepositoryImpl implements ITaskRepository {
   TaskEntry _entityToEntry(Task entity) => TaskEntry(id: entity.id, title: entity.title, description: entity.description, type: entity.type == TaskType.recurrent ? 'recurrent' : 'one_time', completed: entity.completed, timeTriggerAt: entity.timeTriggerAt, geoTriggerLatitude: entity.geoTriggerLatitude, geoTriggerLongitude: entity.geoTriggerLongitude, geoTriggerRadius: entity.geoTriggerRadius, createdAt: entity.createdAt, updatedAt: entity.updatedAt, isPendingSync: false);
   api.TaskDto _entryToApiDto(TaskEntry entry) => api.TaskDto(id: entry.id, title: entry.title, description: entry.description, type: entry.type, completed: entry.completed, timeTriggerAt: entry.timeTriggerAt?.toUtc(), geoTriggerLatitude: entry.geoTriggerLatitude, geoTriggerLongitude: entry.geoTriggerLongitude, geoTriggerRadius: entry.geoTriggerRadius, createdAt: entry.createdAt.toUtc(), updatedAt: entry.updatedAt.toUtc());
   TaskEntry _apiDtoToEntry(api.TaskDto dto) => TaskEntry(id: dto.id, title: dto.title, description: dto.description, type: dto.type, completed: dto.completed, timeTriggerAt: dto.timeTriggerAt, geoTriggerLatitude: dto.geoTriggerLatitude, geoTriggerLongitude: dto.geoTriggerLongitude, geoTriggerRadius: dto.geoTriggerRadius, createdAt: dto.createdAt ?? DateTime.now(), updatedAt: dto.updatedAt ?? DateTime.now(), isPendingSync: false);
-  Future<String?> _getMetadata(String key) async { final db = (localDatasource as TaskLocalDatasource).db; final entry = await (db.select(db.appMetadata)..where((t) => t.key.equals(key))).getSingleOrNull(); return entry?.value; }
-  Future<void> _setMetadata(String key, String value) async { final db = (localDatasource as TaskLocalDatasource).db; await db.into(db.appMetadata).insertOnConflictUpdate(AppMetadataEntry(key: key, value: value)); }
 }
 
 @riverpod
 ITaskRepository taskRepository(Ref ref) => TaskRepositoryImpl(
       localDatasource: ref.watch(taskLocalDatasourceProvider),
       apiClient: ref.watch(apiClientProvider),
-      ref: ref,
       deviceService: ref.watch(deviceServiceProvider),
+      notificationService: ref.watch(notificationServiceProvider),
+      geofencingService: ref.watch(geofencingServiceProvider),
+      authLocalDatasource: ref.watch(authLocalDatasourceProvider),
     );

@@ -18,6 +18,7 @@ part 'database.g.dart';
 @DriftDatabase(tables: [Tasks, AppMetadata])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
+  AppDatabase.forTesting(DatabaseConnection queryExecutor) : super(queryExecutor);
 
   @override
   int get schemaVersion => 1;

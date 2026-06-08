@@ -65,7 +65,7 @@ _AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$AuthResponseToJson(_AuthResponse instance) =>
     <String, dynamic>{
-      'user': instance.user,
+      'user': instance.user.toJson(),
       'accessToken': instance.accessToken,
       'refreshToken': instance.refreshToken,
       'accessTokenExpiresAt': instance.accessTokenExpiresAt.toIso8601String(),

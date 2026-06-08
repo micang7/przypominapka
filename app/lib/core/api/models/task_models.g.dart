@@ -66,9 +66,9 @@ _SyncChanges _$SyncChangesFromJson(Map<String, dynamic> json) => _SyncChanges(
 
 Map<String, dynamic> _$SyncChangesToJson(_SyncChanges instance) =>
     <String, dynamic>{
-      'created': instance.created,
-      'updated': instance.updated,
-      'deleted': instance.deleted,
+      'created': instance.created.map((e) => e.toJson()).toList(),
+      'updated': instance.updated.map((e) => e.toJson()).toList(),
+      'deleted': instance.deleted.map((e) => e.toJson()).toList(),
     };
 
 _SyncRequest _$SyncRequestFromJson(Map<String, dynamic> json) => _SyncRequest(
@@ -80,7 +80,7 @@ _SyncRequest _$SyncRequestFromJson(Map<String, dynamic> json) => _SyncRequest(
 Map<String, dynamic> _$SyncRequestToJson(_SyncRequest instance) =>
     <String, dynamic>{
       'last_sync_at': instance.last_sync_at.toIso8601String(),
-      'changes': instance.changes,
+      'changes': instance.changes.toJson(),
       'deviceId': instance.deviceId,
     };
 
@@ -93,7 +93,7 @@ _SyncResponse _$SyncResponseFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$SyncResponseToJson(_SyncResponse instance) =>
     <String, dynamic>{
       'sync_at': instance.sync_at.toIso8601String(),
-      'changes': instance.changes,
+      'changes': instance.changes.toJson(),
     };
 
 _SessionsUpdateFcmTokenDto _$SessionsUpdateFcmTokenDtoFromJson(
