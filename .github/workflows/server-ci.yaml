@@ -6,52 +6,22 @@ on:
       - "feature/**"
       - "bugfix/**"
       - "hotfix/**"
-
+    paths:
+      - "server/**"
   pull_request:
     branches:
       - main
       - develop
+    paths:
+      - "server/**"
 
 jobs:
-  unit-tests:
-    name: Lint, Build and Unit Tests
+  ci-pipeline:
+    name: Lint, Build and Test
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: server
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: server/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run linter
-        run: npm run lint
-
-      - name: Build application
-        run: npm run build
-
-      - name: Run unit tests
-        run: npm run test:unit
-
-  integration-tests:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: unit-tests
-    defaults:
-      run:
-        working-directory: server
-
-    if: github.event_name == 'pull_request'
 
     services:
       postgres:
@@ -89,5 +59,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run linter
+        run: npm run lint
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run unit tests
+        run: npm run test:unit
+
       - name: Run integration tests
+        if: github.event_name == 'pull_request'
         run: npm run test:int
