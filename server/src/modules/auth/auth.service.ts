@@ -32,7 +32,11 @@ class AuthService {
 
       assertExists(newUser, 'Inserted user was not returned');
 
-      const tokens = await generateTokens(newUser.id);
+      const tokens = await generateTokens(
+        newUser.id,
+        data.deviceId,
+        data.fcmToken,
+      );
 
       appLogger.info(
         { userId: newUser.id, login: newUser.login },
@@ -75,7 +79,7 @@ class AuthService {
       throw new UnauthorizedError('Invalid login or password');
     }
 
-    const tokens = await generateTokens(user.id);
+    const tokens = await generateTokens(user.id, data.deviceId, data.fcmToken);
 
     appLogger.info({ userId: user.id, login: user.login }, 'Login completed');
 
@@ -168,6 +172,9 @@ class AuthService {
       'Matching session found',
     );
 
+    const deviceId = activeSession.deviceId;
+    const fcmToken = activeSession.fcmToken ?? undefined;
+
     await db.delete(sessions).where(eq(sessions.id, activeSession.id));
 
     appLogger.debug(
@@ -175,7 +182,7 @@ class AuthService {
       'Old session deleted',
     );
 
-    const tokens = await generateTokens(userId);
+    const tokens = await generateTokens(userId, deviceId, fcmToken);
 
     appLogger.info({ userId }, 'Token refresh completed');
 

@@ -34,7 +34,7 @@ describe('Users Module', () => {
 
       userId = user!.id;
 
-      const tokens = await generateTokens(userId);
+      const tokens = await generateTokens(userId, 'device123', 'token123');
       accessToken = tokens.accessToken;
     });
 
@@ -97,7 +97,7 @@ describe('Users Module', () => {
 
       userId = user!.id;
 
-      const tokens = await generateTokens(userId);
+      const tokens = await generateTokens(userId, 'device123', 'token123');
       accessToken = tokens.accessToken;
     });
 

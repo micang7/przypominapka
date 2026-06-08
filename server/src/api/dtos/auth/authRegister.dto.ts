@@ -9,6 +9,8 @@ export const AuthRegisterDto = z
       .min(1)
       .max(255)
       .openapi({ example: 'password' }),
+    deviceId: z.string().min(1),
+    fcmToken: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',

@@ -1,9 +1,12 @@
 import { db } from '../../db/client.js';
-import { tasks } from '../../db/schema.js';
-import { and, eq, gt, inArray, notInArray } from 'drizzle-orm';
+import { sessions, tasks } from '../../db/schema.js';
+import { and, eq, gt, inArray, isNotNull, not, notInArray } from 'drizzle-orm';
 import type { SyncDtoType } from '../../api/dtos/sync/sync.dto.js';
 import type { SyncResDtoType } from '../../api/dtos/sync/sync.res.dto.js';
 import { appLogger } from '../../config/logger.js';
+import admin from 'firebase-admin';
+
+admin.initializeApp();
 
 class SyncService {
   async sync(userId: number, data: SyncDtoType): Promise<SyncResDtoType> {
@@ -151,6 +154,46 @@ class SyncService {
       } else {
         serverUpdated.push(formattedTask);
       }
+    }
+
+    try {
+      const activeOtherSessions = await db
+        .select({ fcmToken: sessions.fcmToken })
+        .from(sessions)
+        .where(
+          and(
+            eq(sessions.userId, userId),
+            not(eq(sessions.deviceId, data.deviceId)),
+            isNotNull(sessions.fcmToken),
+          ),
+        );
+
+      appLogger.debug(
+        { userId, targetDevices: activeOtherSessions.length },
+        'Other user devices found',
+      );
+
+      if (activeOtherSessions.length > 0) {
+        const message = {
+          data: {
+            type: 'SYNC_REQUEST',
+            timestamp: new Date().toISOString(),
+          },
+          tokens: activeOtherSessions.map((s) => s.fcmToken!),
+        };
+
+        const response = await admin.messaging().sendEachForMulticast(message);
+
+        appLogger.info(
+          { userId, targetDevices: response.successCount },
+          'FCM synchronization request sent to other devices',
+        );
+      }
+    } catch (err) {
+      appLogger.error(
+        { userId, err },
+        'Failed to send FCM synchronization request',
+      );
     }
 
     appLogger.info(

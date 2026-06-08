@@ -7,6 +7,15 @@ import { eq, sql } from 'drizzle-orm';
 import { hash } from 'argon2';
 import { generateTokens } from '../../utils/generateTokens.js';
 
+vi.mock('firebase-admin', () => ({
+  default: {
+    initializeApp: () => {},
+    messaging: () => ({
+      sendEachForMulticast: vi.fn().mockResolvedValue({ successCount: 0 }),
+    }),
+  },
+}));
+
 describe('Sync Module', () => {
   const api = request(app);
   let userId: number;
@@ -32,7 +41,7 @@ describe('Sync Module', () => {
 
     userId = user!.id;
 
-    const tokens = await generateTokens(userId);
+    const tokens = await generateTokens(userId, 'device123', 'token123');
     accessToken = tokens.accessToken;
   });
 
@@ -62,6 +71,7 @@ describe('Sync Module', () => {
             updated: [],
             deleted: [],
           },
+          deviceId: 'device123',
         });
 
       expect(res.status).toBe(200);
@@ -104,6 +114,7 @@ describe('Sync Module', () => {
             updated: [],
             deleted: [{ id: taskId }],
           },
+          deviceId: 'device123',
         });
 
       expect(res.status).toBe(200);
@@ -160,6 +171,7 @@ describe('Sync Module', () => {
         .send({
           last_sync_at: pastSyncTime.toISOString(),
           changes: { created: [], updated: [], deleted: [] },
+          deviceId: 'device123',
         });
 
       expect(res.status).toBe(200);
@@ -182,6 +194,7 @@ describe('Sync Module', () => {
       const res = await api.post('/api/v1/sync').send({
         last_sync_at: new Date().toISOString(),
         changes: { created: [], updated: [], deleted: [] },
+        deviceId: 'device123',
       });
 
       expect(res.status).toBe(401);
@@ -216,6 +229,7 @@ describe('Sync Module', () => {
             updated: [],
             deleted: [],
           },
+          deviceId: 'device123',
         });
 
       expect(res.status).toBe(500);
@@ -252,6 +266,7 @@ describe('Sync Module', () => {
             updated: [],
             deleted: [],
           },
+          deviceId: 'device123',
         });
 
       expect(res.status).toBe(200);

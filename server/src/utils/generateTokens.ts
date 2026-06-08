@@ -5,7 +5,11 @@ import { db } from '../db/client.js';
 import { sessions } from '../db/schema.js';
 import { randomUUID } from 'crypto';
 
-export async function generateTokens(userId: number) {
+export async function generateTokens(
+  userId: number,
+  deviceId: string,
+  fcmToken?: string,
+) {
   const accessToken = jwt.sign({ userId, jti: randomUUID() }, env.JWT_SECRET, {
     expiresIn: env.JWT_EXPIRES_IN,
   });
@@ -22,6 +26,8 @@ export async function generateTokens(userId: number) {
   await db.insert(sessions).values({
     userId,
     tokenHash,
+    deviceId,
+    fcmToken: fcmToken || null,
   });
 
   const decodedAccess = jwt.decode(accessToken) as jwt.JwtPayload;

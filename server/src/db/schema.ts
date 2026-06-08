@@ -32,6 +32,8 @@ export const sessions = pgTable('sessions', {
     })
     .notNull(),
   tokenHash: varchar('token_hash', { length: 255 }).notNull().unique(),
+  deviceId: text('device_id').notNull(),
+  fcmToken: text('fcm_token'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
