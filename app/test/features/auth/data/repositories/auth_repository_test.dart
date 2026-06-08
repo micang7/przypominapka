@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:dio/dio.dart';
 import 'package:app/features/auth/data/repositories/auth_repository.dart';
 import 'package:app/core/api/api_client.dart';
 import 'package:app/features/auth/data/datasources/auth_local_datasource.dart';
@@ -142,34 +143,169 @@ void main() {
       verify(() => mockTaskLocalDatasource.deleteAllTasks()).called(1);
     });
 
-    test('deleteAccount should call api and clear everything', () async {
-      when(() => mockUsersNamespace.deleteMe()).thenAnswer((_) async {});
+    test('logout should clear everything even if api call fails', () async {
+      when(() => mockAuthLocalDatasource.getRefreshToken()).thenAnswer((_) async => 'refresh_token');
+      when(() => mockAuthNamespace.logout(any())).thenThrow(Exception('API error'));
       when(() => mockAuthLocalDatasource.clearAll()).thenAnswer((_) async {});
       when(() => mockTaskLocalDatasource.deleteAllTasks()).thenAnswer((_) async {});
 
-      await repository.deleteAccount();
+      await repository.logout();
 
-      verify(() => mockUsersNamespace.deleteMe()).called(1);
+      verify(() => mockAuthNamespace.logout('refresh_token')).called(1);
       verify(() => mockAuthLocalDatasource.clearAll()).called(1);
+      verify(() => mockApiClient.clearToken()).called(1);
       verify(() => mockTaskLocalDatasource.deleteAllTasks()).called(1);
     });
-    
-    test('tryAutoLogin should return true if token exists', () async {
-        when(() => mockAuthLocalDatasource.getAccessToken()).thenAnswer((_) async => 'some_token');
-        
-        final result = await repository.tryAutoLogin();
-        
-        expect(result, isTrue);
-        verify(() => mockApiClient.setToken('some_token')).called(1);
+
+    test('logout should not call api if no refresh token', () async {
+      when(() => mockAuthLocalDatasource.getRefreshToken()).thenAnswer((_) async => null);
+      when(() => mockAuthLocalDatasource.clearAll()).thenAnswer((_) async {});
+      when(() => mockTaskLocalDatasource.deleteAllTasks()).thenAnswer((_) async {});
+
+      await repository.logout();
+
+      verifyNever(() => mockAuthNamespace.logout(any()));
+      verify(() => mockAuthLocalDatasource.clearAll()).called(1);
     });
-    
-    test('tryAutoLogin should return false if no token', () async {
-        when(() => mockAuthLocalDatasource.getAccessToken()).thenAnswer((_) async => null);
-        
-        final result = await repository.tryAutoLogin();
-        
+
+    test('login should handle sync error gracefully', () async {
+      final now = DateTime.now();
+      final response = AuthResponse(
+        user: UserDto(id: 1, login: 'u', createdAt: now, updatedAt: now),
+        accessToken: 'acc',
+        refreshToken: 'ref',
+        accessTokenExpiresAt: now.add(const Duration(hours: 1)),
+        refreshTokenExpiresAt: now.add(const Duration(days: 30)),
+      );
+
+      when(() => mockDeviceService.getDeviceId()).thenAnswer((_) async => 'd1');
+      when(() => mockAuthNamespace.login(any())).thenAnswer((_) async => response);
+      when(() => mockAuthLocalDatasource.saveTokens(accessToken: any(named: 'accessToken'), refreshToken: any(named: 'refreshToken')))
+          .thenAnswer((_) async {});
+      when(() => mockTaskLocalDatasource.deleteAllTasks()).thenAnswer((_) async {});
+      when(() => mockTaskRepository.syncTasks()).thenThrow(Exception('Sync error'));
+
+      final result = await repository.login('u', 'p');
+
+      expect(result.accessToken, 'acc');
+      verify(() => mockTaskRepository.syncTasks()).called(1);
+    });
+
+    test('register should handle sync error gracefully', () async {
+      final now = DateTime.now();
+      final response = AuthResponse(
+        user: UserDto(id: 1, login: 'u', createdAt: now, updatedAt: now),
+        accessToken: 'acc',
+        refreshToken: 'ref',
+        accessTokenExpiresAt: now.add(const Duration(hours: 1)),
+        refreshTokenExpiresAt: now.add(const Duration(days: 30)),
+      );
+
+      when(() => mockDeviceService.getDeviceId()).thenAnswer((_) async => 'd1');
+      when(() => mockAuthNamespace.register(any())).thenAnswer((_) async => response);
+      when(() => mockAuthLocalDatasource.saveTokens(accessToken: any(named: 'accessToken'), refreshToken: any(named: 'refreshToken')))
+          .thenAnswer((_) async {});
+      when(() => mockTaskLocalDatasource.deleteAllTasks()).thenAnswer((_) async {});
+      when(() => mockTaskRepository.syncTasks()).thenThrow(Exception('Sync error'));
+
+      final result = await repository.register('u', 'p', 'p');
+
+      expect(result.accessToken, 'acc');
+      verify(() => mockTaskRepository.syncTasks()).called(1);
+    });
+
+    group('changePassword', () {
+      test('should call api when token exists', () async {
+        when(() => mockAuthLocalDatasource.getRefreshToken()).thenAnswer((_) async => 'ref');
+        when(() => mockAuthNamespace.changePassword(any(), any())).thenAnswer((_) async {});
+
+        await repository.changePassword('old', 'new');
+
+        verify(() => mockAuthNamespace.changePassword(any(), 'ref')).called(1);
+      });
+
+      test('should throw if no refresh token', () async {
+        when(() => mockAuthLocalDatasource.getRefreshToken()).thenAnswer((_) async => null);
+
+        expect(() => repository.changePassword('o', 'n'), throwsException);
+      });
+    });
+
+    group('tryRefresh', () {
+      test('should return true and save tokens on success', () async {
+        when(() => mockAuthLocalDatasource.getRefreshToken()).thenAnswer((_) async => 'ref');
+        final response = AuthRefreshResponse(
+          accessToken: 'new_acc',
+          refreshToken: 'new_ref',
+          accessTokenExpiresAt: DateTime.now(),
+          refreshTokenExpiresAt: DateTime.now(),
+        );
+        when(() => mockAuthNamespace.refresh(any())).thenAnswer((_) async => response);
+        when(() => mockAuthLocalDatasource.saveTokens(accessToken: any(named: 'accessToken'), refreshToken: any(named: 'refreshToken')))
+            .thenAnswer((_) async {});
+
+        final result = await repository.tryRefresh();
+
+        expect(result, isTrue);
+        verify(() => mockAuthLocalDatasource.saveTokens(accessToken: 'new_acc', refreshToken: 'new_ref')).called(1);
+        verify(() => mockApiClient.setToken('new_acc')).called(1);
+      });
+
+      test('should return false on network error without logging out', () async {
+        when(() => mockAuthLocalDatasource.getRefreshToken()).thenAnswer((_) async => 'ref');
+        when(() => mockAuthNamespace.refresh(any())).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: ''),
+            type: DioExceptionType.connectionTimeout,
+          ),
+        );
+
+        final result = await repository.tryRefresh();
+
         expect(result, isFalse);
-        verifyNever(() => mockApiClient.setToken(any()));
+        verifyNever(() => mockAuthLocalDatasource.clearAll());
+      });
+
+      test('should logout on other Dio errors', () async {
+        when(() => mockAuthLocalDatasource.getRefreshToken()).thenAnswer((_) async => 'ref');
+        when(() => mockAuthNamespace.refresh(any())).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: ''),
+            type: DioExceptionType.badResponse,
+          ),
+        );
+        when(() => mockAuthLocalDatasource.clearAll()).thenAnswer((_) async {});
+        when(() => mockTaskLocalDatasource.deleteAllTasks()).thenAnswer((_) async {});
+
+        final result = await repository.tryRefresh();
+
+        expect(result, isFalse);
+        verify(() => mockAuthLocalDatasource.clearAll()).called(1);
+      });
+
+      test('should logout on non-Dio errors', () async {
+        when(() => mockAuthLocalDatasource.getRefreshToken()).thenAnswer((_) async => 'ref');
+        when(() => mockAuthNamespace.refresh(any())).thenThrow(Exception('Fatal error'));
+        when(() => mockAuthLocalDatasource.clearAll()).thenAnswer((_) async {});
+        when(() => mockTaskLocalDatasource.deleteAllTasks()).thenAnswer((_) async {});
+
+        final result = await repository.tryRefresh();
+
+        expect(result, isFalse);
+        verify(() => mockAuthLocalDatasource.clearAll()).called(1);
+      });
+
+      test('should return false if no refresh token', () async {
+        when(() => mockAuthLocalDatasource.getRefreshToken()).thenAnswer((_) async => null);
+        final result = await repository.tryRefresh();
+        expect(result, isFalse);
+      });
+
+      test('should return true for mock refresh token', () async {
+        when(() => mockAuthLocalDatasource.getRefreshToken()).thenAnswer((_) async => 'mock_refresh_token');
+        final result = await repository.tryRefresh();
+        expect(result, isTrue);
+      });
     });
   });
 }

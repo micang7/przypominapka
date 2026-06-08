@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as dev;
 import 'package:drift/drift.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:app/core/api/api_client.dart';
@@ -70,7 +71,9 @@ class TaskRepositoryImpl implements ITaskRepository {
         await localDatasource.markAsSynced(task.id);
       }
       await localDatasource.setMetadata('last_sync_at', response.sync_at.toUtc().toIso8601String());
-    } catch (_) {}
+    } catch (e) {
+      dev.log('Błąd synchronizacji zadań: $e', name: 'TaskRepository');
+    }
   }
 
   Future<void> _applyServerChanges(api.SyncChanges changes) async {

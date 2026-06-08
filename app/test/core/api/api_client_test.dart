@@ -55,6 +55,59 @@ void main() {
       final result = await apiClient.auth.login(request);
       expect(result.accessToken, 'a');
     });
+
+    test('register returns AuthResponse', () async {
+      final request = const RegisterRequest(login: 'u', password: 'p', confirmPassword: 'p', deviceId: 'd');
+      final responseData = {
+        'user': {'id': 1, 'login': 'u', 'createdAt': '2023-01-01T00:00:00Z', 'updatedAt': '2023-01-01T00:00:00Z'},
+        'accessToken': 'a',
+        'refreshToken': 'r',
+        'accessTokenExpiresAt': '2023-01-01T00:00:00Z',
+        'refreshTokenExpiresAt': '2023-01-01T00:00:00Z',
+      };
+      
+      when(() => mockDio.post('/auth/register', data: any(named: 'data')))
+          .thenAnswer((_) async => Response(requestOptions: RequestOptions(path: ''), data: responseData));
+
+      final result = await apiClient.auth.register(request);
+      expect(result.accessToken, 'a');
+    });
+
+    test('logout calls api with refresh token header', () async {
+      when(() => mockDio.post('/auth/logout', options: any(named: 'options')))
+          .thenAnswer((_) async => Response(requestOptions: RequestOptions(path: '')));
+
+      await apiClient.auth.logout('refresh_token');
+      
+      final captured = verify(() => mockDio.post('/auth/logout', options: captureAny(named: 'options'))).captured.first as Options;
+      expect(captured.headers?['x-refresh-token'], 'refresh_token');
+    });
+
+    test('refresh returns AuthRefreshResponse', () async {
+      final responseData = {
+        'accessToken': 'new_a',
+        'refreshToken': 'new_r',
+        'accessTokenExpiresAt': '2023-01-01T00:00:00Z',
+        'refreshTokenExpiresAt': '2023-01-01T00:00:00Z',
+      };
+      
+      when(() => mockDio.post('/auth/refresh', options: any(named: 'options')))
+          .thenAnswer((_) async => Response(requestOptions: RequestOptions(path: ''), data: responseData));
+
+      final result = await apiClient.auth.refresh('old_r');
+      expect(result.accessToken, 'new_a');
+    });
+
+    test('changePassword calls api with headers and data', () async {
+      final request = const ChangePasswordRequest(oldPassword: 'o', newPassword: 'n', newConfirmPassword: 'n');
+      
+      when(() => mockDio.post('/auth/change-password', data: any(named: 'data'), options: any(named: 'options')))
+          .thenAnswer((_) async => Response(requestOptions: RequestOptions(path: '')));
+
+      await apiClient.auth.changePassword(request, 'r');
+      
+      verify(() => mockDio.post('/auth/change-password', data: any(named: 'data'), options: any(named: 'options'))).called(1);
+    });
   });
 
   group('UsersNamespace', () {

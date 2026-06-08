@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:app/core/api/api_client.dart';
@@ -59,7 +60,9 @@ class AuthRepository {
 
     try {
       await _taskRepository.syncTasks();
-    } catch (_) {}
+    } catch (e) {
+      dev.log('Błąd synchronizacji po logowaniu/rejestracji: $e', name: 'AuthRepository');
+    }
 
     return response;
   }
@@ -84,7 +87,9 @@ class AuthRepository {
 
     try {
       await _taskRepository.syncTasks();
-    } catch (_) {}
+    } catch (e) {
+      dev.log('Błąd synchronizacji po logowaniu/rejestracji: $e', name: 'AuthRepository');
+    }
 
     return response;
   }
@@ -94,7 +99,9 @@ class AuthRepository {
     if (refreshToken != null && !refreshToken.startsWith('mock')) {
       try {
         await _apiClient.auth.logout(refreshToken);
-      } catch (_) {}
+      } catch (e) {
+        dev.log('Błąd wylogowywania z API: $e', name: 'AuthRepository');
+      }
     }
     await _localDatasource.clearAll();
     _apiClient.clearToken();
