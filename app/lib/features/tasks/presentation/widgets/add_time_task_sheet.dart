@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:app/features/tasks/domain/entities/task.dart';
+import 'package:app/core/utils/error_parser.dart';
 import '../providers/tasks_providers.dart';
 import '../providers/task_list_provider.dart';
 
@@ -95,7 +96,7 @@ class _AddTimeTaskSheetState extends ConsumerState<AddTimeTaskSheet> {
         if (mounted && context.mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Błąd przy dodawaniu: $e')),
+            SnackBar(content: Text(ErrorParser.parse(e))),
           );
         }
       }

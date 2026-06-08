@@ -860,7 +860,7 @@ as List<DeletedTaskDto>,
 /// @nodoc
 mixin _$SyncRequest {
 
- DateTime get last_sync_at; SyncChanges get changes;
+ DateTime get last_sync_at; SyncChanges get changes; String get deviceId;
 /// Create a copy of SyncRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -873,16 +873,16 @@ $SyncRequestCopyWith<SyncRequest> get copyWith => _$SyncRequestCopyWithImpl<Sync
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncRequest&&(identical(other.last_sync_at, last_sync_at) || other.last_sync_at == last_sync_at)&&(identical(other.changes, changes) || other.changes == changes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncRequest&&(identical(other.last_sync_at, last_sync_at) || other.last_sync_at == last_sync_at)&&(identical(other.changes, changes) || other.changes == changes)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,last_sync_at,changes);
+int get hashCode => Object.hash(runtimeType,last_sync_at,changes,deviceId);
 
 @override
 String toString() {
-  return 'SyncRequest(last_sync_at: $last_sync_at, changes: $changes)';
+  return 'SyncRequest(last_sync_at: $last_sync_at, changes: $changes, deviceId: $deviceId)';
 }
 
 
@@ -893,7 +893,7 @@ abstract mixin class $SyncRequestCopyWith<$Res>  {
   factory $SyncRequestCopyWith(SyncRequest value, $Res Function(SyncRequest) _then) = _$SyncRequestCopyWithImpl;
 @useResult
 $Res call({
- DateTime last_sync_at, SyncChanges changes
+ DateTime last_sync_at, SyncChanges changes, String deviceId
 });
 
 
@@ -910,11 +910,12 @@ class _$SyncRequestCopyWithImpl<$Res>
 
 /// Create a copy of SyncRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? last_sync_at = null,Object? changes = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? last_sync_at = null,Object? changes = null,Object? deviceId = null,}) {
   return _then(_self.copyWith(
 last_sync_at: null == last_sync_at ? _self.last_sync_at : last_sync_at // ignore: cast_nullable_to_non_nullable
 as DateTime,changes: null == changes ? _self.changes : changes // ignore: cast_nullable_to_non_nullable
-as SyncChanges,
+as SyncChanges,deviceId: null == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 /// Create a copy of SyncRequest
@@ -1008,10 +1009,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime last_sync_at,  SyncChanges changes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime last_sync_at,  SyncChanges changes,  String deviceId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SyncRequest() when $default != null:
-return $default(_that.last_sync_at,_that.changes);case _:
+return $default(_that.last_sync_at,_that.changes,_that.deviceId);case _:
   return orElse();
 
 }
@@ -1029,10 +1030,10 @@ return $default(_that.last_sync_at,_that.changes);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime last_sync_at,  SyncChanges changes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime last_sync_at,  SyncChanges changes,  String deviceId)  $default,) {final _that = this;
 switch (_that) {
 case _SyncRequest():
-return $default(_that.last_sync_at,_that.changes);case _:
+return $default(_that.last_sync_at,_that.changes,_that.deviceId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1049,10 +1050,10 @@ return $default(_that.last_sync_at,_that.changes);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime last_sync_at,  SyncChanges changes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime last_sync_at,  SyncChanges changes,  String deviceId)?  $default,) {final _that = this;
 switch (_that) {
 case _SyncRequest() when $default != null:
-return $default(_that.last_sync_at,_that.changes);case _:
+return $default(_that.last_sync_at,_that.changes,_that.deviceId);case _:
   return null;
 
 }
@@ -1064,11 +1065,12 @@ return $default(_that.last_sync_at,_that.changes);case _:
 @JsonSerializable()
 
 class _SyncRequest implements SyncRequest {
-  const _SyncRequest({required this.last_sync_at, required this.changes});
+  const _SyncRequest({required this.last_sync_at, required this.changes, required this.deviceId});
   factory _SyncRequest.fromJson(Map<String, dynamic> json) => _$SyncRequestFromJson(json);
 
 @override final  DateTime last_sync_at;
 @override final  SyncChanges changes;
+@override final  String deviceId;
 
 /// Create a copy of SyncRequest
 /// with the given fields replaced by the non-null parameter values.
@@ -1083,16 +1085,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncRequest&&(identical(other.last_sync_at, last_sync_at) || other.last_sync_at == last_sync_at)&&(identical(other.changes, changes) || other.changes == changes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncRequest&&(identical(other.last_sync_at, last_sync_at) || other.last_sync_at == last_sync_at)&&(identical(other.changes, changes) || other.changes == changes)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,last_sync_at,changes);
+int get hashCode => Object.hash(runtimeType,last_sync_at,changes,deviceId);
 
 @override
 String toString() {
-  return 'SyncRequest(last_sync_at: $last_sync_at, changes: $changes)';
+  return 'SyncRequest(last_sync_at: $last_sync_at, changes: $changes, deviceId: $deviceId)';
 }
 
 
@@ -1103,7 +1105,7 @@ abstract mixin class _$SyncRequestCopyWith<$Res> implements $SyncRequestCopyWith
   factory _$SyncRequestCopyWith(_SyncRequest value, $Res Function(_SyncRequest) _then) = __$SyncRequestCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime last_sync_at, SyncChanges changes
+ DateTime last_sync_at, SyncChanges changes, String deviceId
 });
 
 
@@ -1120,11 +1122,12 @@ class __$SyncRequestCopyWithImpl<$Res>
 
 /// Create a copy of SyncRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? last_sync_at = null,Object? changes = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? last_sync_at = null,Object? changes = null,Object? deviceId = null,}) {
   return _then(_SyncRequest(
 last_sync_at: null == last_sync_at ? _self.last_sync_at : last_sync_at // ignore: cast_nullable_to_non_nullable
 as DateTime,changes: null == changes ? _self.changes : changes // ignore: cast_nullable_to_non_nullable
-as SyncChanges,
+as SyncChanges,deviceId: null == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

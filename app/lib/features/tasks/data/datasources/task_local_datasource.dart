@@ -11,6 +11,7 @@ abstract class ITaskLocalDatasource {
   Future<void> upsertTask(TaskEntry task);
   Future<void> upsertTasks(List<TaskEntry> tasks);
   Future<void> deleteTask(String id);
+  Future<void> hardDeleteTask(String id);
   Future<List<TaskEntry>> getPendingSyncTasks();
   Future<void> markAsSynced(String id);
   Future<void> deleteAllTasks();
@@ -58,6 +59,11 @@ class TaskLocalDatasource implements ITaskLocalDatasource {
         updatedAt: Value(DateTime.now()),
       ),
     );
+  }
+
+  @override
+  Future<void> hardDeleteTask(String id) async {
+    await (db.delete(db.tasks)..where((t) => t.id.equals(id))).go();
   }
 
   @override

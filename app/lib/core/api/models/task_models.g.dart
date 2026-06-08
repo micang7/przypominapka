@@ -74,12 +74,14 @@ Map<String, dynamic> _$SyncChangesToJson(_SyncChanges instance) =>
 _SyncRequest _$SyncRequestFromJson(Map<String, dynamic> json) => _SyncRequest(
   last_sync_at: DateTime.parse(json['last_sync_at'] as String),
   changes: SyncChanges.fromJson(json['changes'] as Map<String, dynamic>),
+  deviceId: json['deviceId'] as String,
 );
 
 Map<String, dynamic> _$SyncRequestToJson(_SyncRequest instance) =>
     <String, dynamic>{
       'last_sync_at': instance.last_sync_at.toIso8601String(),
       'changes': instance.changes,
+      'deviceId': instance.deviceId,
     };
 
 _SyncResponse _$SyncResponseFromJson(Map<String, dynamic> json) =>

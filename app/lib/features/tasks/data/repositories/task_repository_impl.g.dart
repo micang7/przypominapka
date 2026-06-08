@@ -49,4 +49,4 @@ final class TaskRepositoryProvider
   }
 }
 
-String _$taskRepositoryHash() => r'78119700fb14bc7c84f8d69cb2b1af0370e1a126';
+String _$taskRepositoryHash() => r'79744c634ab803f2756b6fd90349b4a1bf258506';

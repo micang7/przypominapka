@@ -10,6 +10,7 @@ import 'package:app/features/tasks/data/datasources/task_local_datasource.dart';
 import 'package:app/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:app/core/services/notification_service.dart';
 import 'package:app/core/services/geofencing_service.dart';
+import 'package:app/core/services/device_service.dart';
 import 'package:flutter/foundation.dart';
 
 part 'task_repository_impl.g.dart';
@@ -18,11 +19,13 @@ class TaskRepositoryImpl implements ITaskRepository {
   final ITaskLocalDatasource localDatasource;
   final ApiClient apiClient;
   final Ref ref;
+  final DeviceService deviceService;
 
   TaskRepositoryImpl({
     required this.localDatasource,
     required this.apiClient,
     required this.ref,
+    required this.deviceService,
   });
 
   @override
@@ -40,6 +43,8 @@ class TaskRepositoryImpl implements ITaskRepository {
           ? DateTime.parse(lastSyncAtStr).toUtc()
           : DateTime.fromMillisecondsSinceEpoch(0).toUtc();
 
+      final deviceId = await deviceService.getDeviceId();
+
       final token = await ref.read(authLocalDatasourceProvider).getAccessToken();
       if (token != null) apiClient.setToken(token);
 
@@ -48,10 +53,11 @@ class TaskRepositoryImpl implements ITaskRepository {
         api.SyncRequest(
           last_sync_at: lastSyncAt,
           changes: api.SyncChanges(
-            created: pendingTasks.where((t) => t.deletedAt == null).map(_entryToApiDto).toList(),
-            updated: [],
+            created: [], // Używamy updated do wszystkiego co nie jest usunięciem (upsert)
+            updated: pendingTasks.where((t) => t.deletedAt == null).map(_entryToApiDto).toList(),
             deleted: pendingTasks.where((t) => t.deletedAt != null).map((t) => api.DeletedTaskDto(id: t.id)).toList(),
           ),
+          deviceId: deviceId,
         ),
       );
 
@@ -64,20 +70,36 @@ class TaskRepositoryImpl implements ITaskRepository {
   }
 
   Future<void> _applyServerChanges(api.SyncChanges changes) async {
-    final toUpsert = [...changes.created.map(_apiDtoToEntry), ...changes.updated.map(_apiDtoToEntry)];
+    // 1. Upsert created and updated tasks
+    final toUpsert = [
+      ...changes.created.map(_apiDtoToEntry),
+      ...changes.updated.map(_apiDtoToEntry)
+    ];
+
     if (toUpsert.isNotEmpty) {
       await localDatasource.upsertTasks(toUpsert);
-      for (final dto in changes.created) {
+      for (final dto in [...changes.created, ...changes.updated]) {
         _updateTaskTriggers(
-          dto.id, 
-          dto.title, 
-          dto.description, 
-          dto.completed, 
-          dto.timeTriggerAt, 
-          dto.geoTriggerLatitude, 
-          dto.geoTriggerLongitude, 
-          dto.geoTriggerRadius?.toDouble() // Fix: cast int to double
+          dto.id,
+          dto.title,
+          dto.description,
+          dto.completed,
+          dto.timeTriggerAt,
+          dto.geoTriggerLatitude,
+          dto.geoTriggerLongitude,
+          dto.geoTriggerRadius?.toDouble(),
         );
+      }
+    }
+
+    // 2. Handle server deletions
+    for (final deleted in changes.deleted) {
+      final existing = await localDatasource.getTaskById(deleted.id);
+      if (existing != null) {
+        // Usuwamy triggery przed usunięciem z bazy
+        ref.read(notificationServiceProvider).cancelNotification(_getNotificationId(deleted.id));
+        ref.read(geofencingServiceProvider).removeGeofence(deleted.id, existing.title);
+        await localDatasource.hardDeleteTask(deleted.id);
       }
     }
   }
@@ -195,4 +217,9 @@ class TaskRepositoryImpl implements ITaskRepository {
 }
 
 @riverpod
-ITaskRepository taskRepository(Ref ref) => TaskRepositoryImpl(localDatasource: ref.watch(taskLocalDatasourceProvider), apiClient: ref.watch(apiClientProvider), ref: ref);
+ITaskRepository taskRepository(Ref ref) => TaskRepositoryImpl(
+      localDatasource: ref.watch(taskLocalDatasourceProvider),
+      apiClient: ref.watch(apiClientProvider),
+      ref: ref,
+      deviceService: ref.watch(deviceServiceProvider),
+    );

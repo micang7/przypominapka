@@ -47,6 +47,7 @@ abstract class SyncRequest with _$SyncRequest {
   const factory SyncRequest({
     required DateTime last_sync_at,
     required SyncChanges changes,
+    required String deviceId,
   }) = _SyncRequest;
 
   factory SyncRequest.fromJson(Map<String, dynamic> json) => _$SyncRequestFromJson(json);

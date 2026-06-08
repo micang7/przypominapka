@@ -8,6 +8,7 @@ abstract class LoginRequest with _$LoginRequest {
   const factory LoginRequest({
     required String login,
     required String password,
+    required String deviceId,
   }) = _LoginRequest;
 
   factory LoginRequest.fromJson(Map<String, dynamic> json) => _$LoginRequestFromJson(json);
@@ -19,6 +20,7 @@ abstract class RegisterRequest with _$RegisterRequest {
     required String login,
     required String password,
     required String confirmPassword,
+    required String deviceId,
   }) = _RegisterRequest;
 
   factory RegisterRequest.fromJson(Map<String, dynamic> json) => _$RegisterRequestFromJson(json);
@@ -47,4 +49,27 @@ abstract class AuthResponse with _$AuthResponse {
   }) = _AuthResponse;
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) => _$AuthResponseFromJson(json);
+}
+
+@freezed
+abstract class AuthRefreshResponse with _$AuthRefreshResponse {
+  const factory AuthRefreshResponse({
+    required String accessToken,
+    required String refreshToken,
+    required DateTime accessTokenExpiresAt,
+    required DateTime refreshTokenExpiresAt,
+  }) = _AuthRefreshResponse;
+
+  factory AuthRefreshResponse.fromJson(Map<String, dynamic> json) => _$AuthRefreshResponseFromJson(json);
+}
+
+@freezed
+abstract class ChangePasswordRequest with _$ChangePasswordRequest {
+  const factory ChangePasswordRequest({
+    required String oldPassword,
+    required String newPassword,
+    required String newConfirmPassword,
+  }) = _ChangePasswordRequest;
+
+  factory ChangePasswordRequest.fromJson(Map<String, dynamic> json) => _$ChangePasswordRequestFromJson(json);
 }

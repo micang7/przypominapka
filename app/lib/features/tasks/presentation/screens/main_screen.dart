@@ -7,6 +7,8 @@ import 'package:app/features/tasks/data/repositories/task_repository_impl.dart';
 import 'package:app/features/tasks/presentation/screens/tasks_screen.dart';
 import 'package:app/features/tasks/presentation/widgets/add_time_task_sheet.dart';
 import 'package:app/features/tasks/presentation/screens/tasks_map_screen.dart';
+import 'package:app/features/auth/presentation/widgets/change_password_sheet.dart';
+import 'package:app/features/auth/data/repositories/auth_repository.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -22,6 +24,36 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     const TasksScreen(),
     const TasksMapScreen(),
   ];
+
+  Future<void> _confirmDeleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Usuń konto'),
+        content: const Text('Czy na pewno chcesz trwale usunąć konto? Wszystkie dane zostaną bezpowrotnie usunięte.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Anuluj')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Usuń'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        await ref.read(authRepositoryProvider).deleteAccount();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Błąd usuwania konta: $e')),
+          );
+        }
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -63,6 +95,27 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             ),
             const Spacer(),
             const Divider(),
+            ListTile(
+              leading: const Icon(Icons.password_rounded),
+              title: const Text('Zmień hasło'),
+              onTap: () {
+                Navigator.pop(context); // Zamknij drawer
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+                  builder: (context) => const ChangePasswordSheet(),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.person_remove_rounded, color: Colors.red),
+              title: const Text('Usuń konto', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context); // Zamknij drawer
+                _confirmDeleteAccount();
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Wyloguj się'),

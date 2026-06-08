@@ -54,12 +54,20 @@ class AuthNamespace {
     );
   }
 
-  Future<AuthResponse> refresh(String refreshToken) async {
+  Future<AuthRefreshResponse> refresh(String refreshToken) async {
     final response = await _dio.post(
       '/auth/refresh',
       options: Options(headers: {'x-refresh-token': refreshToken}),
     );
-    return AuthResponse.fromJson(response.data);
+    return AuthRefreshResponse.fromJson(response.data);
+  }
+
+  Future<void> changePassword(ChangePasswordRequest request, String refreshToken) async {
+    await _dio.post(
+      '/auth/change-password',
+      data: request.toJson(),
+      options: Options(headers: {'x-refresh-token': refreshToken}),
+    );
   }
 }
 
