@@ -1,43 +1,35 @@
 # Przypominapka
 
-A full-stack mobile application designed to remind users of tasks based on specific conditions—whether triggered at a scheduled time or upon entering a designated geographic area (geofencing). Built with Flutter for cross-platform mobile delivery and Node.js/TypeScript backend, Przypominapka employs an offline-first architecture with reactive synchronization via Firebase Cloud Messaging to ensure seamless task management across devices.
+![App CI](https://github.com/micang7/przypominapka/actions/workflows/app-ci.yml/badge.svg)
+![Server CI](https://github.com/micang7/przypominapka/actions/workflows/server-ci.yml/badge.svg)
 
-[CI/CD](https://github.com/micang7/przypominapka/actions)
+---
+
+A full-stack mobile application designed to remind users of tasks based on specific conditions—whether triggered at a scheduled time or upon entering a designated geographic area (geofencing). Built with Flutter for cross-platform mobile delivery and Node.js/TypeScript backend, Przypominapka employs an offline-first architecture with reactive synchronization via Firebase Cloud Messaging to ensure seamless task management across devices.
 
 ## Screenshots
 
-![Login Screen](/assets/Login_Screen.png)
-
-Login Screen
-
-![App Home Screen](/assets/App_Home_Screen.png)
-
-App Home Screen
-
-![Add New Time-Based Task](/assets/Add_New_Time-Based_Task.png)
-
-Add New Time-Based Task
-
-![Edit Time-Based Task](/assets/Edit_Time-Based_Task.png)
-
-Edit Time-Based Task
-
-![Add New Location-Based Task](/assets/Add_New_Location-Based_Task.png)
-![Add New Location-Based Task](/assets/Add_New_Location-Based_Task2.png)
-
-Add New Location-Based Task
-
-![Deleting a Task](/assets/Deleting_a_Task.png)
-
-Deleting a Task
-
-![Notification](/assets/Notification.png)
-
-Notification
-
-![Side menu](/assets/Side_menu.png)
-
-Side menu
+<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+<img src="assets/Login_Screen.png" />
+<img src="assets/App_Home_Screen.png" />
+<img src="assets/Add_New_Time-Based_Task.png" />
+<img src="assets/Edit_Time-Based_Task.png" />
+<img src="assets/Add_New_Location-Based_Task.png" />
+<strong style="text-align: center;">Login Screen</strong>
+<strong style="text-align: center;">App Home Screen</strong>
+<strong style="text-align: center;">Add New Time-Based Task</strong>
+<strong style="text-align: center;">Edit Time-Based Task</strong>
+<strong style="text-align: center;">Add New Location-Based Task</strong>
+<img src="assets/Add_New_Location-Based_Task2.png" />
+<img src="assets/Deleting_a_Task.png" />
+<img src="assets/Notification.png" />
+<img src="assets/Side_menu.png" />
+<div></div>
+<strong style="text-align: center;">Add New Location-Based Task</strong>
+<strong style="text-align: center;">Deleting a Task</strong>
+<strong style="text-align: center;">Notification</strong>
+<strong style="text-align: center;">Side menu</strong>
+</div>
 
 ## Features
 
@@ -74,7 +66,7 @@ Side menu
 - <img src="https://img.shields.io/badge/Native_Geofence-673AB7?style=flat&logo=Flutter&logoColor=white" style="vertical-align: middle;"> – OS-level background geofencing.
 - <img src="https://img.shields.io/badge/Local_Notifications-FF9800?style=flat&logo=Flutter&logoColor=white" style="vertical-align: middle;"> – Trigger-based native push alerts.
 
-### <img src="https://api.iconify.design/lucide:server.svg?color=%233b82f6" width="18" height="18" style="vertical-align: middle; margin-bottom: 3px;"> Backend (API & Logic)
+### <img src="https://api.iconify.design/lucide:server.svg?color=%233b82f6" width="18" height="18" style="vertical-align: middle; margin-bottom: 3px;"> Backend (API)
 
 - <img src="https://img.shields.io/badge/TypeScript-%23007ACC.svg?style=flat&logo=typescript&logoColor=white" style="vertical-align: middle;"> – Core programming language.
 - <img src="https://img.shields.io/badge/express.js-%23404d59.svg?style=flat&logo=express&logoColor=white" style="vertical-align: middle;"> – Web framework.
@@ -108,47 +100,115 @@ Side menu
 - <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat&logo=githubactions&logoColor=white" style="vertical-align: middle;"> – CI/CD automation pipelines.
 - <img src="https://img.shields.io/badge/Render-000000?style=flat&logo=render&logoColor=white" style="vertical-align: middle;"> – Production cloud hosting.
 
-## Mobile App Architecture (Flutter)
+## Project Architecture
 
-The mobile application is built on **Flutter** (SDK ^3.11.0) with **Dart** as the primary language. The architecture follows a simplified Clean Architecture pattern with clear separation of concerns:
+Przypominapka is built on a multi-layered, decoupled architecture designed to support a robust **Offline-First** paradigm. It consists of a cross-platform Flutter mobile application and a stateless Node.js/TypeScript REST API.
 
-- **Riverpod** (flutter_riverpod ^3.3.1) – Reactive state management and dependency injection with code generation support.
-- **GoRouter** – Declarative navigation with deep linking capabilities for seamless user flows.
-- **Drift** – Reactive local SQL database providing offline-first persistence with real-time synchronization.
-- **Dio** – Advanced HTTP client with JWT interceptors for secure API communication.
-- **Freezed & json_serializable** – Immutable data transfer objects (DTOs) with automatic JSON serialization.
-- **Repository Pattern** – Data sources abstraction layer for testability and maintainability.
-- **Flutter Secure Storage** – Encrypted local storage for authentication tokens and sensitive credentials.
+```
++------------------------------------------------------------+
+|                          PRESENTATION                      |
+|            Flutter UI Widgets (Screens & Components)       |
++------------------------------------------------------------+
+                             │  ▲
+              State Updates  │  │  Reads Immutable State
+                             ▼  │
++------------------------------------------------------------+
+|                     VIEWMODEL (RIVERPOD)                   |
+|          State Notifiers & Auto-Generated Providers        |
++------------------------------------------------------------+
+                             │  ▲
+             Invokes Methods │  │  Emits Domain Entities
+                             ▼  │
++------------------------------------------------------------+
+|                        DOMAIN LAYER                        |
+|          Business Logic, Entities & Repository Contracts   |
++------------------------------------------------------------+
+                             │  ▲
+              Data Requests  │  │  Returns Clean Data Models
+                             ▼  │
++------------------------------------------------------------+
+|                         DATA LAYER                         |
+|    Repository Implementations, DTOs & Sync Coordination    |
++------------------------------------------------------------+
+               │                               ▲
+      Local    │                               │    Remote
+   Operations  ▼                               │  API Requests
++--------------------------+       +-------------------------+
+|    LOCAL DATASOURCE      |       |    REMOTE DATASOURCE    |
+|  Drift (Reactive SQLite) |       |     Dio (HTTP Client)   |
++--------------------------+       +-------------------------+
+```
 
-### Native Integrations
+### Mobile App (Flutter)
 
-- **Geofencing** – OS-level background location monitoring for automatic reminder triggers.
-- **Local Notifications** – Native push alerts triggered by geofence and time-based events.
-- **Google Maps** – Interactive map visualization for task planning and geolocation context.
-- **Geolocator** – Active foreground location tracking and permission management.
+The mobile app follows a feature-driven **Clean Architecture** combined with **MVVM**, utilizing **Riverpod** for state management and dependency injection:
 
-## Push Notifications & Reactive Sync
+- **Presentation Layer (View & ViewModel):** Declarative UI widgets interact with Riverpod providers, which expose immutable states generated via **freezed**.
+- **Domain Layer:** Contains pure business logic, core entities, and abstract repository interfaces, remaining entirely framework-independent.
+- **Data Layer:** Implements repository contracts and manages data mapping via DTOs across two data sources:
+  - _Local Data Source:_ Handles local persistence using **Drift** (reactive SQLite) to provide immediate UI updates via streams.
+  - _Remote Data Source:_ Manages API calls using **Dio**, featuring automatic JWT token refresh interceptors.
 
-Przypominapka leverages **Firebase Core** and **Firebase Cloud Messaging (FCM)** to provide near real-time synchronization across devices:
+### Offline-First & Reactive Sync
 
-- **Silent Data Messages** – Background-triggered synchronization without user notification.
-- **Background Isolate Handler** – Dedicated isolate for processing push events even when the app is terminated.
-- **Device-Based Token Management** – Automatic FCM token registration and lifecycle management.
-- **Reactive Database Updates** – Changes from remote sync immediately propagate to the local reactive database, triggering UI updates.
+The application prioritizes local storage to ensure uninterrupted functionality without network connectivity:
 
-## Backend Overview
+- All write, update and delete operations are immediately committed to the local Drift database and flagged with sync metadata (e.g., `isPendingSync`).
+- Multi-device synchronization is achieved via Firebase Cloud Messaging (**Silent Push Notifications**).
+- A **Background Isolate Handler** intercepts these messages even when the app is closed, fetches delta updates from the backend `/sync` endpoint, and applies them to the local database, instantly triggering reactive UI updates.
 
-The backend is a **TypeScript/Express.js** REST API with comprehensive validation and observability:
+### Backend Server (Node.js & TypeScript)
 
-- **Express.js** – Lightweight and flexible web framework.
-- **Zod** – Runtime schema validation ensuring type safety and request integrity.
-- **JWT Authentication** – Stateless, secure token-based user sessions.
-- **PostgreSQL (Neon)** – Production-grade relational database with serverless deployment.
-- **Drizzle ORM** – TypeScript-first ORM for type-safe database operations.
-- **OpenAPI / Swagger UI** – Auto-generated interactive API documentation.
-- **Pino** – High-performance JSON logging for production observability.
+The backend is a stateless, secure REST API built with **Express.js** and TypeScript, focused on strict schema safety:
 
-## <img src="https://api.iconify.design/lucide:layers.svg?color=%236366f1" width="22" height="22" style="vertical-align: text-bottom; margin-bottom: 3px;"> Prerequisites
+- **Type-Safe Contract:** Endpoints and routing are explicitly typed using **@ts-rest/express** for compile-time type safety between contracts and controllers.
+- **Request Validation:** Every incoming request undergoes strict runtime validation via **Zod** middleware, instantly rejecting malformed data.
+- **Business & Database Layer:** Controllers delegate operations to services, while data persistence is handled in a serverless **PostgreSQL (neon.tech)** database via **Drizzle ORM**.
+- **Authentication:** Sessions are stateless and secured by automated **JWT** access and refresh token authentication middleware.
+
+## <img src="https://api.iconify.design/lucide:rocket.svg?color=%2322c55e" width="22" height="22" style="vertical-align: text-bottom; margin-bottom: 3px;"> Frontend Setup (Flutter Mobile App)
+
+To run the Flutter mobile application on Android or iOS devices/emulators:
+
+### 1. Configure Google Maps API Key
+
+Before building the Flutter app, you must add your Google Maps API key to the Android configuration:
+
+```
+echo "maps_api_key=YOUR_GOOGLE_MAPS_API_KEY" >> app/android/local.properties
+```
+
+Replace YOUR_GOOGLE_MAPS_API_KEY with your actual Google Maps API key.
+
+### 2. Navigate to App Directory
+
+```
+cd app
+```
+
+### 3. Install Dependencies
+
+```
+flutter pub get
+```
+
+### 4. Generate Code (Freezed, Riverpod, etc.)
+
+```
+flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+### 5. Run the App
+
+```
+flutter run
+```
+
+This command will launch the app on a connected device or running emulator.
+
+## <img src="https://api.iconify.design/lucide:layers.svg?color=%236366f1" width="22" height="22" style="vertical-align: text-bottom; margin-bottom: 3px;"> Backend Setup (Express API Server)
+
+### Prerequisites
 
 Before setting up the project environment, ensure you have the following components installed:
 
@@ -156,8 +216,7 @@ Before setting up the project environment, ensure you have the following compone
 - <img src="https://api.iconify.design/lucide:code-2.svg?color=%234ade80" width="18" height="18" style="vertical-align: text-bottom;"> **Node.js v24.x LTS** _(Required for local development)_
 - <img src="https://api.iconify.design/lucide:database.svg?color=%233b82f6" width="18" height="18" style="vertical-align: text-bottom;"> **PostgreSQL v16+** _(Required for standalone database setups)_
 
-
-## <img src="https://api.iconify.design/lucide:rocket.svg?color=%2322c55e" width="22" height="22" style="vertical-align: text-bottom; margin-bottom: 3px;"> Quick Start (Docker Compose)
+### Quick Start (Docker Compose)
 
 The fastest and most reliable way to spin up the entire backend ecosystem is by using Docker Compose.
 
@@ -186,7 +245,7 @@ docker compose up -d
 docker compose exec server npm run migrate
 ```
 
-## Service Availability
+### Service Availability
 
 Once the containers are successfully running, the following services will be accessible:
 
@@ -197,39 +256,8 @@ Once the containers are successfully running, the following services will be acc
 | **OpenAPI Schema (JSON)**             | [http://localhost:3000/api/v1/docs/openapi.json](https://www.google.com/search?q=http://localhost:3000/api/v1/docs/openapi.json) |
 | **Database Instance**                 | `localhost:5433`                                                                                                                 |
 
-
-## <img src="https://api.iconify.design/lucide:rocket.svg?color=%2322c55e" width="22" height="22" style="vertical-align: text-bottom; margin-bottom: 3px;"> Frontend Setup (Flutter Mobile App)
-To run the Flutter mobile application on Android or iOS devices/emulators:
-
-## 1. Configure Google Maps API Key
-Before building the Flutter app, you must add your Google Maps API key to the Android configuration:
-```
-echo "maps_api_key=YOUR_GOOGLE_MAPS_API_KEY" >> app/android/local.properties
-```
-Replace YOUR_GOOGLE_MAPS_API_KEY with your actual Google Maps API key.
-
-## 2. Navigate to App Directory
-```
-cd app
-```
-
-## 3. Install Dependencies
-```
-flutter pub get
-```
-
-## 4. Generate Code (Freezed, Riverpod, etc.)
-```
-flutter pub run build_runner build --delete-conflicting-outputs
-```
-
-## 5. Run the App
-```
-flutter run
-```
-This command will launch the app on a connected device or running emulator.
-
 ## Project Structure
+
 ```
 przypominapka/
 ├── .github/workflows/      # Konfiguracja automatyzacji CI/CD (GitHub Actions)
@@ -269,5 +297,3 @@ przypominapka/
         │   └── users/      # Operacje na danych użytkowników
         └── utils/          # Funkcje pomocnicze backendu
 ```
-
-
