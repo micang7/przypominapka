@@ -6,14 +6,10 @@ on:
       - "feature/**"
       - "bugfix/**"
       - "hotfix/**"
-    paths:
-      - "server/**"
   pull_request:
     branches:
       - main
       - develop
-    paths:
-      - "server/**"
 
 jobs:
   ci-pipeline:
