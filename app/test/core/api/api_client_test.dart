@@ -132,7 +132,7 @@ void main() {
 
   group('SyncNamespace', () {
     test('sync returns SyncResponse', () async {
-      final request = api.SyncRequest(last_sync_at: DateTime.now(), changes: const api.SyncChanges(), deviceId: '1');
+      final request = api.SyncRequest(lastSyncAt: DateTime.now(), changes: const api.SyncChanges(), deviceId: '1');
       final responseData = {
         'sync_at': '2023-01-01T00:00:00Z',
         'changes': {'created': [], 'updated': [], 'deleted': []}
@@ -142,7 +142,7 @@ void main() {
           .thenAnswer((_) async => Response(requestOptions: RequestOptions(path: ''), data: responseData));
 
       final result = await apiClient.sync.sync(request);
-      expect(result.sync_at, isNotNull);
+      expect(result.syncAt, isNotNull);
     });
   });
   

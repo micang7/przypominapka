@@ -6,7 +6,6 @@ import 'package:app/core/api/api_client.dart';
 import 'package:app/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:app/features/tasks/data/datasources/task_local_datasource.dart';
 import 'package:app/core/services/device_service.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app/core/api/models/auth_models.dart';
 import 'package:app/features/tasks/data/repositories/task_repository_impl.dart';
 

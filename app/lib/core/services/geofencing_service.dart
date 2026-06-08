@@ -124,7 +124,7 @@ class GeofencingService {
   }) async {
     // 1. Rejestracja natywna (jako backup)
     final geofence = Geofence(
-      id: id + '|' + title,
+      id: '$id|$title',
       location: Location(latitude: lat, longitude: lng),
       radiusMeters: radius,
       triggers: {GeofenceEvent.enter},
@@ -149,7 +149,7 @@ class GeofencingService {
   }
 
   Future<void> removeGeofence(String id, String title) async {
-    await NativeGeofenceManager.instance.removeGeofenceById(id + '|' + title);
+    await NativeGeofenceManager.instance.removeGeofenceById('$id|$title');
     _activeGeofences.remove(id);
     
     if (_activeGeofences.isEmpty) {

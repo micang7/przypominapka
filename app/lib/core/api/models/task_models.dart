@@ -45,7 +45,7 @@ abstract class SyncChanges with _$SyncChanges {
 @freezed
 abstract class SyncRequest with _$SyncRequest {
   const factory SyncRequest({
-    required DateTime last_sync_at,
+    @JsonKey(name: 'last_sync_at') required DateTime lastSyncAt,
     required SyncChanges changes,
     required String deviceId,
   }) = _SyncRequest;
@@ -56,7 +56,7 @@ abstract class SyncRequest with _$SyncRequest {
 @freezed
 abstract class SyncResponse with _$SyncResponse {
   const factory SyncResponse({
-    required DateTime sync_at,
+    @JsonKey(name: 'sync_at') required DateTime syncAt,
     required SyncChanges changes,
   }) = _SyncResponse;
 

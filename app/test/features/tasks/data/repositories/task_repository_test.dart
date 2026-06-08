@@ -99,7 +99,7 @@ void main() {
       when(() => mockLocalDatasource.getPendingSyncTasks()).thenAnswer((_) async => []);
       
       final syncResponse = api.SyncResponse(
-        sync_at: DateTime.now(),
+        syncAt: DateTime.now(),
         changes: const api.SyncChanges(),
       );
       when(() => mockSyncNamespace.sync(any())).thenAnswer((_) async => syncResponse);
@@ -138,7 +138,7 @@ void main() {
       );
 
       final syncResponse = api.SyncResponse(
-        sync_at: DateTime.now(),
+        syncAt: DateTime.now(),
         changes: api.SyncChanges(updated: [serverTask]),
       );
 
@@ -178,7 +178,7 @@ void main() {
       when(() => mockDeviceService.getDeviceId()).thenAnswer((_) async => 'device123');
       when(() => mockAuthLocalDatasource.getAccessToken()).thenAnswer((_) async => 'token');
       when(() => mockLocalDatasource.getPendingSyncTasks()).thenAnswer((_) async => []);
-      when(() => mockSyncNamespace.sync(any())).thenAnswer((_) async => api.SyncResponse(sync_at: DateTime.now(), changes: const api.SyncChanges()));
+      when(() => mockSyncNamespace.sync(any())).thenAnswer((_) async => api.SyncResponse(syncAt: DateTime.now(), changes: const api.SyncChanges()));
 
       // Act
       await repository.deleteTask('1');
@@ -212,7 +212,7 @@ void main() {
       when(() => mockDeviceService.getDeviceId()).thenAnswer((_) async => 'device123');
       when(() => mockAuthLocalDatasource.getAccessToken()).thenAnswer((_) async => 'token');
       when(() => mockLocalDatasource.getPendingSyncTasks()).thenAnswer((_) async => []);
-      when(() => mockSyncNamespace.sync(any())).thenAnswer((_) async => api.SyncResponse(sync_at: DateTime.now(), changes: const api.SyncChanges()));
+      when(() => mockSyncNamespace.sync(any())).thenAnswer((_) async => api.SyncResponse(syncAt: DateTime.now(), changes: const api.SyncChanges()));
 
       // Act
       await repository.toggleTaskCompletion('1');

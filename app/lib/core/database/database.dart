@@ -8,7 +8,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 // --- DODANE IMPORTY ---
 import 'package:sqlite3/sqlite3.dart';
-import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 
 import 'tables/tasks_table.dart';
@@ -18,7 +17,7 @@ part 'database.g.dart';
 @DriftDatabase(tables: [Tasks, AppMetadata])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
-  AppDatabase.forTesting(DatabaseConnection queryExecutor) : super(queryExecutor);
+  AppDatabase.forTesting(super.queryExecutor);
 
   @override
   int get schemaVersion => 1;

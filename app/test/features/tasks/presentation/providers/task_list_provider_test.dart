@@ -41,7 +41,7 @@ void main() {
     when(() => mockRepository.watchTasks()).thenAnswer((_) => Stream.value(tasks));
 
     final container = createContainer();
-    container.listen(allTasksProvider, (_, __) {}); // Keep alive
+    container.listen(allTasksProvider, (prev, next) {}); // Keep alive
     final result = await container.read(allTasksProvider.future);
     
     expect(result.length, 1);
@@ -58,7 +58,7 @@ void main() {
     when(() => mockRepository.watchTasks()).thenAnswer((_) => Stream.value(tasks));
     
     final container = createContainer();
-    container.listen(allTasksProvider, (_, __) {}); // Keep alive
+    container.listen(allTasksProvider, (prev, next) {}); // Keep alive
     await container.read(allTasksProvider.future);
     
     // No query
@@ -86,7 +86,7 @@ void main() {
     when(() => mockRepository.watchTasks()).thenAnswer((_) => Stream.value(tasks));
     
     final container = createContainer();
-    container.listen(allTasksProvider, (_, __) {}); // Keep alive
+    container.listen(allTasksProvider, (prev, next) {}); // Keep alive
     await container.read(allTasksProvider.future);
     
     expect(container.read(timeTasksProvider).length, 1);
