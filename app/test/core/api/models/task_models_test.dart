@@ -42,7 +42,7 @@ void main() {
   group('SyncRequest', () {
     test('should correctly serialize to JSON', () {
       final request = SyncRequest(
-        last_sync_at: DateTime.parse('2023-01-01T00:00:00.000Z'),
+        lastSyncAt: DateTime.parse('2023-01-01T00:00:00.000Z'),
         deviceId: 'device123',
         changes: const SyncChanges(
           created: [

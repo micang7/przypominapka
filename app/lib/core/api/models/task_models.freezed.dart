@@ -860,7 +860,7 @@ as List<DeletedTaskDto>,
 /// @nodoc
 mixin _$SyncRequest {
 
- DateTime get last_sync_at; SyncChanges get changes; String get deviceId;
+@JsonKey(name: 'last_sync_at') DateTime get lastSyncAt; SyncChanges get changes; String get deviceId;
 /// Create a copy of SyncRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -873,16 +873,16 @@ $SyncRequestCopyWith<SyncRequest> get copyWith => _$SyncRequestCopyWithImpl<Sync
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncRequest&&(identical(other.last_sync_at, last_sync_at) || other.last_sync_at == last_sync_at)&&(identical(other.changes, changes) || other.changes == changes)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncRequest&&(identical(other.lastSyncAt, lastSyncAt) || other.lastSyncAt == lastSyncAt)&&(identical(other.changes, changes) || other.changes == changes)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,last_sync_at,changes,deviceId);
+int get hashCode => Object.hash(runtimeType,lastSyncAt,changes,deviceId);
 
 @override
 String toString() {
-  return 'SyncRequest(last_sync_at: $last_sync_at, changes: $changes, deviceId: $deviceId)';
+  return 'SyncRequest(lastSyncAt: $lastSyncAt, changes: $changes, deviceId: $deviceId)';
 }
 
 
@@ -893,7 +893,7 @@ abstract mixin class $SyncRequestCopyWith<$Res>  {
   factory $SyncRequestCopyWith(SyncRequest value, $Res Function(SyncRequest) _then) = _$SyncRequestCopyWithImpl;
 @useResult
 $Res call({
- DateTime last_sync_at, SyncChanges changes, String deviceId
+@JsonKey(name: 'last_sync_at') DateTime lastSyncAt, SyncChanges changes, String deviceId
 });
 
 
@@ -910,9 +910,9 @@ class _$SyncRequestCopyWithImpl<$Res>
 
 /// Create a copy of SyncRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? last_sync_at = null,Object? changes = null,Object? deviceId = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? lastSyncAt = null,Object? changes = null,Object? deviceId = null,}) {
   return _then(_self.copyWith(
-last_sync_at: null == last_sync_at ? _self.last_sync_at : last_sync_at // ignore: cast_nullable_to_non_nullable
+lastSyncAt: null == lastSyncAt ? _self.lastSyncAt : lastSyncAt // ignore: cast_nullable_to_non_nullable
 as DateTime,changes: null == changes ? _self.changes : changes // ignore: cast_nullable_to_non_nullable
 as SyncChanges,deviceId: null == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
 as String,
@@ -1009,10 +1009,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime last_sync_at,  SyncChanges changes,  String deviceId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'last_sync_at')  DateTime lastSyncAt,  SyncChanges changes,  String deviceId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SyncRequest() when $default != null:
-return $default(_that.last_sync_at,_that.changes,_that.deviceId);case _:
+return $default(_that.lastSyncAt,_that.changes,_that.deviceId);case _:
   return orElse();
 
 }
@@ -1030,10 +1030,10 @@ return $default(_that.last_sync_at,_that.changes,_that.deviceId);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime last_sync_at,  SyncChanges changes,  String deviceId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'last_sync_at')  DateTime lastSyncAt,  SyncChanges changes,  String deviceId)  $default,) {final _that = this;
 switch (_that) {
 case _SyncRequest():
-return $default(_that.last_sync_at,_that.changes,_that.deviceId);case _:
+return $default(_that.lastSyncAt,_that.changes,_that.deviceId);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1050,10 +1050,10 @@ return $default(_that.last_sync_at,_that.changes,_that.deviceId);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime last_sync_at,  SyncChanges changes,  String deviceId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'last_sync_at')  DateTime lastSyncAt,  SyncChanges changes,  String deviceId)?  $default,) {final _that = this;
 switch (_that) {
 case _SyncRequest() when $default != null:
-return $default(_that.last_sync_at,_that.changes,_that.deviceId);case _:
+return $default(_that.lastSyncAt,_that.changes,_that.deviceId);case _:
   return null;
 
 }
@@ -1065,10 +1065,10 @@ return $default(_that.last_sync_at,_that.changes,_that.deviceId);case _:
 @JsonSerializable()
 
 class _SyncRequest implements SyncRequest {
-  const _SyncRequest({required this.last_sync_at, required this.changes, required this.deviceId});
+  const _SyncRequest({@JsonKey(name: 'last_sync_at') required this.lastSyncAt, required this.changes, required this.deviceId});
   factory _SyncRequest.fromJson(Map<String, dynamic> json) => _$SyncRequestFromJson(json);
 
-@override final  DateTime last_sync_at;
+@override@JsonKey(name: 'last_sync_at') final  DateTime lastSyncAt;
 @override final  SyncChanges changes;
 @override final  String deviceId;
 
@@ -1085,16 +1085,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncRequest&&(identical(other.last_sync_at, last_sync_at) || other.last_sync_at == last_sync_at)&&(identical(other.changes, changes) || other.changes == changes)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncRequest&&(identical(other.lastSyncAt, lastSyncAt) || other.lastSyncAt == lastSyncAt)&&(identical(other.changes, changes) || other.changes == changes)&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,last_sync_at,changes,deviceId);
+int get hashCode => Object.hash(runtimeType,lastSyncAt,changes,deviceId);
 
 @override
 String toString() {
-  return 'SyncRequest(last_sync_at: $last_sync_at, changes: $changes, deviceId: $deviceId)';
+  return 'SyncRequest(lastSyncAt: $lastSyncAt, changes: $changes, deviceId: $deviceId)';
 }
 
 
@@ -1105,7 +1105,7 @@ abstract mixin class _$SyncRequestCopyWith<$Res> implements $SyncRequestCopyWith
   factory _$SyncRequestCopyWith(_SyncRequest value, $Res Function(_SyncRequest) _then) = __$SyncRequestCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime last_sync_at, SyncChanges changes, String deviceId
+@JsonKey(name: 'last_sync_at') DateTime lastSyncAt, SyncChanges changes, String deviceId
 });
 
 
@@ -1122,9 +1122,9 @@ class __$SyncRequestCopyWithImpl<$Res>
 
 /// Create a copy of SyncRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? last_sync_at = null,Object? changes = null,Object? deviceId = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? lastSyncAt = null,Object? changes = null,Object? deviceId = null,}) {
   return _then(_SyncRequest(
-last_sync_at: null == last_sync_at ? _self.last_sync_at : last_sync_at // ignore: cast_nullable_to_non_nullable
+lastSyncAt: null == lastSyncAt ? _self.lastSyncAt : lastSyncAt // ignore: cast_nullable_to_non_nullable
 as DateTime,changes: null == changes ? _self.changes : changes // ignore: cast_nullable_to_non_nullable
 as SyncChanges,deviceId: null == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
 as String,
@@ -1147,7 +1147,7 @@ $SyncChangesCopyWith<$Res> get changes {
 /// @nodoc
 mixin _$SyncResponse {
 
- DateTime get sync_at; SyncChanges get changes;
+@JsonKey(name: 'sync_at') DateTime get syncAt; SyncChanges get changes;
 /// Create a copy of SyncResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1160,16 +1160,16 @@ $SyncResponseCopyWith<SyncResponse> get copyWith => _$SyncResponseCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncResponse&&(identical(other.sync_at, sync_at) || other.sync_at == sync_at)&&(identical(other.changes, changes) || other.changes == changes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncResponse&&(identical(other.syncAt, syncAt) || other.syncAt == syncAt)&&(identical(other.changes, changes) || other.changes == changes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sync_at,changes);
+int get hashCode => Object.hash(runtimeType,syncAt,changes);
 
 @override
 String toString() {
-  return 'SyncResponse(sync_at: $sync_at, changes: $changes)';
+  return 'SyncResponse(syncAt: $syncAt, changes: $changes)';
 }
 
 
@@ -1180,7 +1180,7 @@ abstract mixin class $SyncResponseCopyWith<$Res>  {
   factory $SyncResponseCopyWith(SyncResponse value, $Res Function(SyncResponse) _then) = _$SyncResponseCopyWithImpl;
 @useResult
 $Res call({
- DateTime sync_at, SyncChanges changes
+@JsonKey(name: 'sync_at') DateTime syncAt, SyncChanges changes
 });
 
 
@@ -1197,9 +1197,9 @@ class _$SyncResponseCopyWithImpl<$Res>
 
 /// Create a copy of SyncResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sync_at = null,Object? changes = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? syncAt = null,Object? changes = null,}) {
   return _then(_self.copyWith(
-sync_at: null == sync_at ? _self.sync_at : sync_at // ignore: cast_nullable_to_non_nullable
+syncAt: null == syncAt ? _self.syncAt : syncAt // ignore: cast_nullable_to_non_nullable
 as DateTime,changes: null == changes ? _self.changes : changes // ignore: cast_nullable_to_non_nullable
 as SyncChanges,
   ));
@@ -1295,10 +1295,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DateTime sync_at,  SyncChanges changes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'sync_at')  DateTime syncAt,  SyncChanges changes)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SyncResponse() when $default != null:
-return $default(_that.sync_at,_that.changes);case _:
+return $default(_that.syncAt,_that.changes);case _:
   return orElse();
 
 }
@@ -1316,10 +1316,10 @@ return $default(_that.sync_at,_that.changes);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DateTime sync_at,  SyncChanges changes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'sync_at')  DateTime syncAt,  SyncChanges changes)  $default,) {final _that = this;
 switch (_that) {
 case _SyncResponse():
-return $default(_that.sync_at,_that.changes);case _:
+return $default(_that.syncAt,_that.changes);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1336,10 +1336,10 @@ return $default(_that.sync_at,_that.changes);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DateTime sync_at,  SyncChanges changes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'sync_at')  DateTime syncAt,  SyncChanges changes)?  $default,) {final _that = this;
 switch (_that) {
 case _SyncResponse() when $default != null:
-return $default(_that.sync_at,_that.changes);case _:
+return $default(_that.syncAt,_that.changes);case _:
   return null;
 
 }
@@ -1351,10 +1351,10 @@ return $default(_that.sync_at,_that.changes);case _:
 @JsonSerializable()
 
 class _SyncResponse implements SyncResponse {
-  const _SyncResponse({required this.sync_at, required this.changes});
+  const _SyncResponse({@JsonKey(name: 'sync_at') required this.syncAt, required this.changes});
   factory _SyncResponse.fromJson(Map<String, dynamic> json) => _$SyncResponseFromJson(json);
 
-@override final  DateTime sync_at;
+@override@JsonKey(name: 'sync_at') final  DateTime syncAt;
 @override final  SyncChanges changes;
 
 /// Create a copy of SyncResponse
@@ -1370,16 +1370,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncResponse&&(identical(other.sync_at, sync_at) || other.sync_at == sync_at)&&(identical(other.changes, changes) || other.changes == changes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncResponse&&(identical(other.syncAt, syncAt) || other.syncAt == syncAt)&&(identical(other.changes, changes) || other.changes == changes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sync_at,changes);
+int get hashCode => Object.hash(runtimeType,syncAt,changes);
 
 @override
 String toString() {
-  return 'SyncResponse(sync_at: $sync_at, changes: $changes)';
+  return 'SyncResponse(syncAt: $syncAt, changes: $changes)';
 }
 
 
@@ -1390,7 +1390,7 @@ abstract mixin class _$SyncResponseCopyWith<$Res> implements $SyncResponseCopyWi
   factory _$SyncResponseCopyWith(_SyncResponse value, $Res Function(_SyncResponse) _then) = __$SyncResponseCopyWithImpl;
 @override @useResult
 $Res call({
- DateTime sync_at, SyncChanges changes
+@JsonKey(name: 'sync_at') DateTime syncAt, SyncChanges changes
 });
 
 
@@ -1407,9 +1407,9 @@ class __$SyncResponseCopyWithImpl<$Res>
 
 /// Create a copy of SyncResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sync_at = null,Object? changes = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? syncAt = null,Object? changes = null,}) {
   return _then(_SyncResponse(
-sync_at: null == sync_at ? _self.sync_at : sync_at // ignore: cast_nullable_to_non_nullable
+syncAt: null == syncAt ? _self.syncAt : syncAt // ignore: cast_nullable_to_non_nullable
 as DateTime,changes: null == changes ? _self.changes : changes // ignore: cast_nullable_to_non_nullable
 as SyncChanges,
   ));

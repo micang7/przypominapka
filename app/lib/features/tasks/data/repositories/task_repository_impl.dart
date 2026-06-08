@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer' as dev;
-import 'package:drift/drift.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:app/core/api/api_client.dart';
 import 'package:app/core/api/models/task_models.dart' as api;
@@ -12,7 +11,6 @@ import 'package:app/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:app/core/services/notification_service.dart';
 import 'package:app/core/services/geofencing_service.dart';
 import 'package:app/core/services/device_service.dart';
-import 'package:flutter/foundation.dart';
 
 part 'task_repository_impl.g.dart';
 
@@ -56,7 +54,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       final pendingTasks = await localDatasource.getPendingSyncTasks();
       final response = await apiClient.sync.sync(
         api.SyncRequest(
-          last_sync_at: lastSyncAt,
+          lastSyncAt: lastSyncAt,
           changes: api.SyncChanges(
             created: [], // Używamy updated do wszystkiego co nie jest usunięciem (upsert)
             updated: pendingTasks.where((t) => t.deletedAt == null).map(_entryToApiDto).toList(),
@@ -70,7 +68,7 @@ class TaskRepositoryImpl implements ITaskRepository {
       for (final task in pendingTasks) {
         await localDatasource.markAsSynced(task.id);
       }
-      await localDatasource.setMetadata('last_sync_at', response.sync_at.toUtc().toIso8601String());
+      await localDatasource.setMetadata('last_sync_at', response.syncAt.toUtc().toIso8601String());
     } catch (e) {
       dev.log('Błąd synchronizacji zadań: $e', name: 'TaskRepository');
     }
@@ -192,7 +190,7 @@ class TaskRepositoryImpl implements ITaskRepository {
     if (!completed && timeAt != null) {
       notificationService.scheduleNotification(
         id: _getNotificationId(id),
-        title: 'Zadanie: ' + title,
+        title: 'Zadanie: $title',
         body: (description != null && description.isNotEmpty) ? description : 'Czas na realizację!',
         scheduledDate: timeAt,
       );

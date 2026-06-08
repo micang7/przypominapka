@@ -20,6 +20,7 @@ dependencies:
   
   # Database
   drift: ^2.25.0
+  sqlite3: ^2.4.2
   sqlite3_flutter_libs: ^0.5.24
   
   # HTTP & Networking

@@ -28,7 +28,7 @@ void main() {
     when(() => mockRepository.tryAutoLogin()).thenAnswer((_) async => true);
     
     final container = createContainer();
-    final sub = container.listen(authStateProvider, (_, __) {}); // keep alive
+    final sub = container.listen(authStateProvider, (prev, next) {}); // keep alive
     
     // Check initial state
     expect(container.read(authStateProvider).isInitializing, true);
@@ -48,7 +48,7 @@ void main() {
     when(() => mockRepository.login('u', 'p')).thenAnswer((_) async => throw UnimplementedError('We mock below properly'));
     
     final container = createContainer();
-    container.listen(authStateProvider, (_, __) {});
+    container.listen(authStateProvider, (prev, next) {});
     await Future.delayed(Duration.zero);
 
     when(() => mockRepository.login('u', 'p')).thenAnswer((_) async => AuthResponse(
@@ -69,7 +69,7 @@ void main() {
     when(() => mockRepository.tryAutoLogin()).thenAnswer((_) async => false);
     
     final container = createContainer();
-    container.listen(authStateProvider, (_, __) {});
+    container.listen(authStateProvider, (prev, next) {});
     await Future.delayed(Duration.zero);
 
     when(() => mockRepository.login('u', 'p')).thenThrow(Exception('Login failed'));
@@ -85,7 +85,7 @@ void main() {
     when(() => mockRepository.logout()).thenAnswer((_) async {});
     
     final container = createContainer();
-    container.listen(authStateProvider, (_, __) {});
+    container.listen(authStateProvider, (prev, next) {});
     await Future.delayed(Duration.zero);
 
     await container.read(authStateProvider.notifier).logout();

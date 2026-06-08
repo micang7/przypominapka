@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz_data;
@@ -17,10 +18,10 @@ class NotificationService {
       final String timezoneName = timezoneInfo.identifier;
       
       tz.setLocalLocation(tz.getLocation(timezoneName));
-      print('✅ Strefa czasowa pomyślnie ustawiona na: $timezoneName');
+      dev.log('✅ Strefa czasowa pomyślnie ustawiona na: $timezoneName', name: 'NotificationService');
     } catch (e) {
       // TERAZ ZOBACZYMY PRAWDZIWY POWÓD BŁĘDU
-      print('❌ BŁĄD INICJALIZACJI STREFY CZASOWEJ: $e');
+      dev.log('❌ BŁĄD INICJALIZACJI STREFY CZASOWEJ: $e', name: 'NotificationService');
     }
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -49,17 +50,17 @@ class NotificationService {
     required DateTime scheduledDate,
   }) async {
     // DODAJ TE PRINTY:
-    print('--- PRÓBA ZAPLANOWANIA POWIADOMIENIA ---');
-    print('ID: $id');
-    print('Data przekazana (Raw): $scheduledDate (isUtc: ${scheduledDate.isUtc})');
-    print('Czas teraz (Local): ${DateTime.now()}');
+    dev.log('--- PRÓBA ZAPLANOWANIA POWIADOMIENIA ---', name: 'NotificationService');
+    dev.log('ID: $id', name: 'NotificationService');
+    dev.log('Data przekazana (Raw): $scheduledDate (isUtc: ${scheduledDate.isUtc})', name: 'NotificationService');
+    dev.log('Czas teraz (Local): ${DateTime.now()}', name: 'NotificationService');
 
     if (scheduledDate.isBefore(DateTime.now())) {
-      print('❌ ANULOWANO: Data jest w przeszłości!');
+      dev.log('❌ ANULOWANO: Data jest w przeszłości!', name: 'NotificationService');
       return;
     }
 
-    print('🚀 Przekazuję do zonedSchedule...');
+    dev.log('🚀 Przekazuję do zonedSchedule...', name: 'NotificationService');
     final localLocation = tz.local;
     
     await _notifications.zonedSchedule(
@@ -77,7 +78,7 @@ class NotificationService {
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
     );
-    print('✅ Powiadomienie zaplanowane pomyślnie w systemie!');
+    dev.log('✅ Powiadomienie zaplanowane pomyślnie w systemie!', name: 'NotificationService');
   }
 
   Future<void> cancelNotification(int id) async {
