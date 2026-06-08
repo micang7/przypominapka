@@ -1,4 +1,4 @@
-name: App CI
+name: Lint, Build and Test
 
 on:
   push:
@@ -17,7 +17,7 @@ on:
 
 jobs:
   build-and-test:
-    name: Build and Unit Tests
+    name: Lint, Build and Test
     runs-on: ubuntu-latest
     defaults:
       run:
