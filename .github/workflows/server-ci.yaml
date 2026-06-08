@@ -23,7 +23,6 @@ jobs:
       run:
         working-directory: server
 
-    # Definiujemy usługi na poziomie tego jednego jobu
     services:
       postgres:
         image: postgres:16
@@ -69,8 +68,6 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
-      # KROK WARUNKOWY: Odpala się TYLKO przy Pull Requeście
-      # Wykorzystuje dokładnie te same node_modules, które zainstalowały się wyżej
       - name: Run integration tests
         if: github.event_name == 'pull_request'
         run: npm run test:int
