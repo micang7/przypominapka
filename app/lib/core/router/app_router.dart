@@ -9,30 +9,32 @@ import 'package:app/features/tasks/presentation/screens/map_picker_screen.dart';
 
 part 'app_router.g.dart';
 
+String? getRouterRedirect(AuthState authState, String location) {
+  if (authState.isInitializing) return '/splash';
+  
+  final isAuthenticated = authState.isAuthenticated;
+  final isLoggingIn = location == '/login';
+  final isRegistering = location == '/register';
+  final isSplash = location == '/splash';
+
+  if (!isAuthenticated && !isLoggingIn && !isRegistering && !isSplash) {
+    return '/login';
+  }
+
+  if (isAuthenticated && (isLoggingIn || isRegistering || isSplash)) {
+    return '/home';
+  }
+
+  return null;
+}
+
 @riverpod
 GoRouter appRouter(Ref ref) {
   final authState = ref.watch(authStateProvider);
 
   return GoRouter(
     initialLocation: authState.isInitializing ? '/splash' : (authState.isAuthenticated ? '/home' : '/login'),
-    redirect: (context, state) {
-      if (authState.isInitializing) return '/splash';
-      
-      final isAuthenticated = authState.isAuthenticated;
-      final isLoggingIn = state.matchedLocation == '/login';
-      final isRegistering = state.matchedLocation == '/register';
-      final isSplash = state.matchedLocation == '/splash';
-
-      if (!isAuthenticated && !isLoggingIn && !isRegistering && !isSplash) {
-        return '/login';
-      }
-
-      if (isAuthenticated && (isLoggingIn || isRegistering || isSplash)) {
-        return '/home';
-      }
-
-      return null;
-    },
+    redirect: (context, state) => getRouterRedirect(authState, state.matchedLocation),
     routes: [
       GoRoute(
         path: '/splash',
