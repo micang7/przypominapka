@@ -15,6 +15,8 @@ abstract class ITaskLocalDatasource {
   Future<List<TaskEntry>> getPendingSyncTasks();
   Future<void> markAsSynced(String id);
   Future<void> deleteAllTasks();
+  Future<String?> getMetadata(String key);
+  Future<void> setMetadata(String key, String value);
 }
 
 class TaskLocalDatasource implements ITaskLocalDatasource {
@@ -84,6 +86,17 @@ class TaskLocalDatasource implements ITaskLocalDatasource {
       await db.delete(db.tasks).go();
       await db.delete(db.appMetadata).go();
     });
+  }
+
+  @override
+  Future<String?> getMetadata(String key) async {
+    final entry = await (db.select(db.appMetadata)..where((t) => t.key.equals(key))).getSingleOrNull();
+    return entry?.value;
+  }
+
+  @override
+  Future<void> setMetadata(String key, String value) async {
+    await db.into(db.appMetadata).insertOnConflictUpdate(AppMetadataEntry(key: key, value: value));
   }
 }
 

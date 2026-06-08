@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:app/core/api/api_client.dart';
@@ -5,6 +6,7 @@ import 'package:app/core/api/models/auth_models.dart';
 import 'package:app/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:app/features/tasks/data/datasources/task_local_datasource.dart';
 import 'package:app/core/services/device_service.dart';
+import 'package:app/features/tasks/domain/repositories/task_repository_contract.dart';
 import 'package:app/features/tasks/data/repositories/task_repository_impl.dart';
 
 part 'auth_repository.g.dart';
@@ -14,9 +16,9 @@ class AuthRepository {
   final AuthLocalDatasource _localDatasource;
   final ITaskLocalDatasource _taskLocalDatasource;
   final DeviceService _deviceService;
-  final Ref _ref;
+  final ITaskRepository _taskRepository;
 
-  AuthRepository(this._apiClient, this._localDatasource, this._taskLocalDatasource, this._deviceService, this._ref);
+  AuthRepository(this._apiClient, this._localDatasource, this._taskLocalDatasource, this._deviceService, this._taskRepository);
 
   Future<AuthResponse> login(String login, String password) async {
     if (login == 'test' && password == 'test123') {
@@ -57,8 +59,10 @@ class AuthRepository {
     await _taskLocalDatasource.deleteAllTasks();
 
     try {
-      await _ref.read(taskRepositoryProvider).syncTasks();
-    } catch (_) {}
+      await _taskRepository.syncTasks();
+    } catch (e) {
+      dev.log('Błąd synchronizacji po logowaniu/rejestracji: $e', name: 'AuthRepository');
+    }
 
     return response;
   }
@@ -82,8 +86,10 @@ class AuthRepository {
     await _taskLocalDatasource.deleteAllTasks();
 
     try {
-      await _ref.read(taskRepositoryProvider).syncTasks();
-    } catch (_) {}
+      await _taskRepository.syncTasks();
+    } catch (e) {
+      dev.log('Błąd synchronizacji po logowaniu/rejestracji: $e', name: 'AuthRepository');
+    }
 
     return response;
   }
@@ -93,7 +99,9 @@ class AuthRepository {
     if (refreshToken != null && !refreshToken.startsWith('mock')) {
       try {
         await _apiClient.auth.logout(refreshToken);
-      } catch (_) {}
+      } catch (e) {
+        dev.log('Błąd wylogowywania z API: $e', name: 'AuthRepository');
+      }
     }
     await _localDatasource.clearAll();
     _apiClient.clearToken();
@@ -168,6 +176,6 @@ AuthRepository authRepository(Ref ref) {
     ref.watch(authLocalDatasourceProvider),
     ref.watch(taskLocalDatasourceProvider),
     ref.watch(deviceServiceProvider),
-    ref,
+    ref.watch(taskRepositoryProvider),
   );
 }

@@ -15,7 +15,7 @@ SyncRequestDto _$SyncRequestDtoFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$SyncRequestDtoToJson(SyncRequestDto instance) =>
     <String, dynamic>{
       'lastSyncAt': instance.lastSyncAt.toIso8601String(),
-      'changes': instance.changes,
+      'changes': instance.changes.toJson(),
     };
 
 SyncChangesDto _$SyncChangesDtoFromJson(Map<String, dynamic> json) =>
@@ -33,8 +33,8 @@ SyncChangesDto _$SyncChangesDtoFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$SyncChangesDtoToJson(SyncChangesDto instance) =>
     <String, dynamic>{
-      'created': instance.created,
-      'updated': instance.updated,
+      'created': instance.created.map((e) => e.toJson()).toList(),
+      'updated': instance.updated.map((e) => e.toJson()).toList(),
       'deleted': instance.deleted,
     };
 
@@ -47,5 +47,5 @@ SyncResponseDto _$SyncResponseDtoFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$SyncResponseDtoToJson(SyncResponseDto instance) =>
     <String, dynamic>{
       'syncAt': instance.syncAt.toIso8601String(),
-      'changes': instance.changes,
+      'changes': instance.changes.toJson(),
     };
