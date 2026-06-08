@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:app/features/tasks/domain/entities/task.dart';
 import 'package:app/features/tasks/data/repositories/task_repository_impl.dart';
+import 'package:app/core/utils/error_parser.dart';
 import '../providers/task_list_provider.dart';
 
 class EditTaskSheet extends ConsumerStatefulWidget {
@@ -115,7 +116,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
       } catch (e) {
         if (mounted && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Błąd przy zapisie: $e')),
+            SnackBar(content: Text(ErrorParser.parse(e))),
           );
         }
       }

@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:app/features/tasks/domain/entities/task.dart';
 import 'package:app/features/tasks/data/repositories/task_repository_impl.dart';
 import 'package:app/features/tasks/presentation/widgets/edit_task_sheet.dart';
+import 'package:app/core/utils/error_parser.dart';
 import '../providers/task_list_provider.dart';
 
 class TasksMapScreen extends ConsumerStatefulWidget {
@@ -58,7 +59,9 @@ class _TasksMapScreenState extends ConsumerState<TasksMapScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        // Cichy błąd, używamy domyślnej lokalizacji
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Błąd lokalizacji: $e')),
+        );
       }
     }
   }
@@ -103,7 +106,22 @@ class _TasksMapScreenState extends ConsumerState<TasksMapScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Synchronizuj',
-            onPressed: () => ref.read(taskRepositoryProvider).syncTasks(),
+            onPressed: () async {
+              try {
+                await ref.read(taskRepositoryProvider).syncTasks();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Zadania zsynchronizowane')),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(ErrorParser.parse(e))),
+                  );
+                }
+              }
+            },
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app/features/tasks/data/repositories/task_repository_impl.dart';
+import 'package:app/core/utils/error_parser.dart';
 import '../providers/task_list_provider.dart';
 import '../widgets/task_list_item.dart';
 
@@ -39,7 +40,22 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
               IconButton(
                 icon: const Icon(Icons.refresh),
                 tooltip: 'Synchronizuj',
-                onPressed: () => ref.read(taskRepositoryProvider).syncTasks(),
+                onPressed: () async {
+                  try {
+                    await ref.read(taskRepositoryProvider).syncTasks();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Zadania zsynchronizowane')),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(ErrorParser.parse(e))),
+                      );
+                    }
+                  }
+                },
               ),
             ],
             bottom: PreferredSize(

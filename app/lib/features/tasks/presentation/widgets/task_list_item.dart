@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:app/features/tasks/domain/entities/task.dart';
+import 'package:app/core/utils/error_parser.dart';
 import '../providers/tasks_providers.dart';
 import './edit_task_sheet.dart';
 
@@ -54,8 +55,16 @@ class TaskListItem extends ConsumerWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  onChanged: (_) {
-                    ref.read(taskRepositoryProvider).toggleTaskCompletion(task.id);
+                  onChanged: (val) async {
+                    try {
+                      await ref.read(taskRepositoryProvider).toggleTaskCompletion(task.id);
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(ErrorParser.parse(e))),
+                        );
+                      }
+                    }
                   },
                 ),
                 const SizedBox(width: 8),
@@ -132,9 +141,17 @@ class TaskListItem extends ConsumerWidget {
             child: const Text('Anuluj'),
           ),
           TextButton(
-            onPressed: () {
-              ref.read(taskRepositoryProvider).deleteTask(task.id);
-              Navigator.pop(context);
+            onPressed: () async {
+              try {
+                await ref.read(taskRepositoryProvider).deleteTask(task.id);
+                if (context.mounted) Navigator.pop(context);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(ErrorParser.parse(e))),
+                  );
+                }
+              }
             },
             style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
             child: const Text('Usuń'),
