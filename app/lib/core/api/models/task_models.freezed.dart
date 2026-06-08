@@ -1427,4 +1427,270 @@ $SyncChangesCopyWith<$Res> get changes {
 }
 }
 
+
+/// @nodoc
+mixin _$SessionsUpdateFcmTokenDto {
+
+ String get deviceId; String get fcmToken;
+/// Create a copy of SessionsUpdateFcmTokenDto
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SessionsUpdateFcmTokenDtoCopyWith<SessionsUpdateFcmTokenDto> get copyWith => _$SessionsUpdateFcmTokenDtoCopyWithImpl<SessionsUpdateFcmTokenDto>(this as SessionsUpdateFcmTokenDto, _$identity);
+
+  /// Serializes this SessionsUpdateFcmTokenDto to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionsUpdateFcmTokenDto&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.fcmToken, fcmToken) || other.fcmToken == fcmToken));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,deviceId,fcmToken);
+
+@override
+String toString() {
+  return 'SessionsUpdateFcmTokenDto(deviceId: $deviceId, fcmToken: $fcmToken)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $SessionsUpdateFcmTokenDtoCopyWith<$Res>  {
+  factory $SessionsUpdateFcmTokenDtoCopyWith(SessionsUpdateFcmTokenDto value, $Res Function(SessionsUpdateFcmTokenDto) _then) = _$SessionsUpdateFcmTokenDtoCopyWithImpl;
+@useResult
+$Res call({
+ String deviceId, String fcmToken
+});
+
+
+
+
+}
+/// @nodoc
+class _$SessionsUpdateFcmTokenDtoCopyWithImpl<$Res>
+    implements $SessionsUpdateFcmTokenDtoCopyWith<$Res> {
+  _$SessionsUpdateFcmTokenDtoCopyWithImpl(this._self, this._then);
+
+  final SessionsUpdateFcmTokenDto _self;
+  final $Res Function(SessionsUpdateFcmTokenDto) _then;
+
+/// Create a copy of SessionsUpdateFcmTokenDto
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? deviceId = null,Object? fcmToken = null,}) {
+  return _then(_self.copyWith(
+deviceId: null == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
+as String,fcmToken: null == fcmToken ? _self.fcmToken : fcmToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [SessionsUpdateFcmTokenDto].
+extension SessionsUpdateFcmTokenDtoPatterns on SessionsUpdateFcmTokenDto {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SessionsUpdateFcmTokenDto value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SessionsUpdateFcmTokenDto() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SessionsUpdateFcmTokenDto value)  $default,){
+final _that = this;
+switch (_that) {
+case _SessionsUpdateFcmTokenDto():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SessionsUpdateFcmTokenDto value)?  $default,){
+final _that = this;
+switch (_that) {
+case _SessionsUpdateFcmTokenDto() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String deviceId,  String fcmToken)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SessionsUpdateFcmTokenDto() when $default != null:
+return $default(_that.deviceId,_that.fcmToken);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String deviceId,  String fcmToken)  $default,) {final _that = this;
+switch (_that) {
+case _SessionsUpdateFcmTokenDto():
+return $default(_that.deviceId,_that.fcmToken);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String deviceId,  String fcmToken)?  $default,) {final _that = this;
+switch (_that) {
+case _SessionsUpdateFcmTokenDto() when $default != null:
+return $default(_that.deviceId,_that.fcmToken);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _SessionsUpdateFcmTokenDto implements SessionsUpdateFcmTokenDto {
+  const _SessionsUpdateFcmTokenDto({required this.deviceId, required this.fcmToken});
+  factory _SessionsUpdateFcmTokenDto.fromJson(Map<String, dynamic> json) => _$SessionsUpdateFcmTokenDtoFromJson(json);
+
+@override final  String deviceId;
+@override final  String fcmToken;
+
+/// Create a copy of SessionsUpdateFcmTokenDto
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SessionsUpdateFcmTokenDtoCopyWith<_SessionsUpdateFcmTokenDto> get copyWith => __$SessionsUpdateFcmTokenDtoCopyWithImpl<_SessionsUpdateFcmTokenDto>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$SessionsUpdateFcmTokenDtoToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionsUpdateFcmTokenDto&&(identical(other.deviceId, deviceId) || other.deviceId == deviceId)&&(identical(other.fcmToken, fcmToken) || other.fcmToken == fcmToken));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,deviceId,fcmToken);
+
+@override
+String toString() {
+  return 'SessionsUpdateFcmTokenDto(deviceId: $deviceId, fcmToken: $fcmToken)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SessionsUpdateFcmTokenDtoCopyWith<$Res> implements $SessionsUpdateFcmTokenDtoCopyWith<$Res> {
+  factory _$SessionsUpdateFcmTokenDtoCopyWith(_SessionsUpdateFcmTokenDto value, $Res Function(_SessionsUpdateFcmTokenDto) _then) = __$SessionsUpdateFcmTokenDtoCopyWithImpl;
+@override @useResult
+$Res call({
+ String deviceId, String fcmToken
+});
+
+
+
+
+}
+/// @nodoc
+class __$SessionsUpdateFcmTokenDtoCopyWithImpl<$Res>
+    implements _$SessionsUpdateFcmTokenDtoCopyWith<$Res> {
+  __$SessionsUpdateFcmTokenDtoCopyWithImpl(this._self, this._then);
+
+  final _SessionsUpdateFcmTokenDto _self;
+  final $Res Function(_SessionsUpdateFcmTokenDto) _then;
+
+/// Create a copy of SessionsUpdateFcmTokenDto
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? deviceId = null,Object? fcmToken = null,}) {
+  return _then(_SessionsUpdateFcmTokenDto(
+deviceId: null == deviceId ? _self.deviceId : deviceId // ignore: cast_nullable_to_non_nullable
+as String,fcmToken: null == fcmToken ? _self.fcmToken : fcmToken // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
 // dart format on

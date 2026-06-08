@@ -14,15 +14,18 @@ class ApiClient {
     _auth = AuthNamespace(_dio);
     _users = UsersNamespace(_dio);
     _sync = SyncNamespace(_dio);
+    _sessions = SessionsNamespace(_dio);
   }
 
   late final AuthNamespace _auth;
   late final UsersNamespace _users;
   late final SyncNamespace _sync;
+  late final SessionsNamespace _sessions;
 
   AuthNamespace get auth => _auth;
   UsersNamespace get users => _users;
   SyncNamespace get sync => _sync;
+  SessionsNamespace get sessions => _sessions;
 
   void setToken(String token) {
     _dio.options.headers['Authorization'] = 'Bearer $token';
@@ -92,6 +95,15 @@ class SyncNamespace {
   Future<SyncResponse> sync(SyncRequest request) async {
     final response = await _dio.post('/sync', data: request.toJson());
     return SyncResponse.fromJson(response.data);
+  }
+}
+
+class SessionsNamespace {
+  final Dio _dio;
+  SessionsNamespace(this._dio);
+
+  Future<void> updateFcmToken(SessionsUpdateFcmTokenDto request) async {
+    await _dio.patch('/sessions/fcm-token', data: request.toJson());
   }
 }
 

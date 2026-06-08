@@ -62,3 +62,13 @@ abstract class SyncResponse with _$SyncResponse {
 
   factory SyncResponse.fromJson(Map<String, dynamic> json) => _$SyncResponseFromJson(json);
 }
+
+@freezed
+abstract class SessionsUpdateFcmTokenDto with _$SessionsUpdateFcmTokenDto {
+  const factory SessionsUpdateFcmTokenDto({
+    required String deviceId,
+    required String fcmToken,
+  }) = _SessionsUpdateFcmTokenDto;
+
+  factory SessionsUpdateFcmTokenDto.fromJson(Map<String, dynamic> json) => _$SessionsUpdateFcmTokenDtoFromJson(json);
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app/core/services/notification_service.dart';
 import 'package:app/core/services/geofencing_service.dart';
+import 'package:app/core/services/fcm_service.dart';
 import 'package:app/features/tasks/data/repositories/task_repository_impl.dart';
 import 'core/router/app_router.dart';
 
@@ -13,6 +14,7 @@ void main() async {
   // Inicjalizacja bez blokowania startu UI
   unawaited(container.read(notificationServiceProvider).init());
   unawaited(container.read(geofencingServiceProvider).init());
+  unawaited(container.read(fcmServiceProvider).init());
 
   runApp(
     UncontrolledProviderScope(

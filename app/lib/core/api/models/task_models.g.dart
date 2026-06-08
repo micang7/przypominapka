@@ -95,3 +95,17 @@ Map<String, dynamic> _$SyncResponseToJson(_SyncResponse instance) =>
       'sync_at': instance.sync_at.toIso8601String(),
       'changes': instance.changes,
     };
+
+_SessionsUpdateFcmTokenDto _$SessionsUpdateFcmTokenDtoFromJson(
+  Map<String, dynamic> json,
+) => _SessionsUpdateFcmTokenDto(
+  deviceId: json['deviceId'] as String,
+  fcmToken: json['fcmToken'] as String,
+);
+
+Map<String, dynamic> _$SessionsUpdateFcmTokenDtoToJson(
+  _SessionsUpdateFcmTokenDto instance,
+) => <String, dynamic>{
+  'deviceId': instance.deviceId,
+  'fcmToken': instance.fcmToken,
+};
