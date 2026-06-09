@@ -1,7 +1,7 @@
 # Przypominapka
 
-![App CI](https://github.com/micang7/przypominapka/actions/workflows/app-ci.yml/badge.svg)
-![Server CI](https://github.com/micang7/przypominapka/actions/workflows/server-ci.yml/badge.svg)
+![App CI](https://github.com/micang7/przypominapka/actions/workflows/app-ci.yaml/badge.svg)
+![Server CI](https://github.com/micang7/przypominapka/actions/workflows/server-ci.yaml/badge.svg)
 
 ---
 
