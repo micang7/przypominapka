@@ -16,6 +16,7 @@ import { jwtAuth } from './middleware/jwtAuth.js';
 import cors from 'cors';
 import { env } from './config/env.js';
 import rateLimit from 'express-rate-limit';
+import path from 'node:path';
 
 export const app = express();
 
@@ -95,6 +96,12 @@ createExpressEndpoints(apiContract, router, app, {
 app.use('/api/v1/docs/ui', swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 app.get('/api/v1/docs/openapi.json', (_req, res) => res.json(openApiDocument));
+
+app.get('/api/v1/docs/privacy-policy', (_req, res) =>
+  res.sendFile(
+    path.join(import.meta.dirname, '../../docs/privacy-policy.html'),
+  ),
+);
 
 app.use((_req, _res, next) => next(new NotFoundError()));
 
