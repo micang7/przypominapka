@@ -19,6 +19,8 @@ import rateLimit from 'express-rate-limit';
 
 export const app = express();
 
+app.set('trust proxy', 1);
+
 app.use(cors());
 
 app.use(express.json());
@@ -47,6 +49,14 @@ if (env.NODE_ENV === 'production') {
   app.use('/api/v1/auth/login', authLimiter);
   app.use('/api/v1/auth/register', authLimiter);
 }
+
+app.get('/', (_req, res) => {
+  res.json({
+    service: 'Przypominapka API',
+    version: '1.0.0',
+    docs: '/api/v1/docs/ui',
+  });
+});
 
 createExpressEndpoints(apiContract, router, app, {
   globalMiddleware: [
