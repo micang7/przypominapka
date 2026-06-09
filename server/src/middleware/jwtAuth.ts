@@ -25,18 +25,22 @@ export async function jwtAuth(
 
   const token = authHeader.split(' ')[1]!;
 
-  const userId = decodeToken(token, 'access');
+  try {
+    const userId = decodeToken(token, 'access');
 
-  const user = await db.query.users.findFirst({
-    where: eq(users.id, userId),
-  });
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, userId),
+    });
 
-  if (!user) {
-    appLogger.warn({ userId }, 'User not found during JWT authentication');
-    return next(new UnauthorizedError('User does not exist'));
+    if (!user) {
+      appLogger.warn({ userId }, 'User not found during JWT authentication');
+      return next(new UnauthorizedError('User does not exist'));
+    }
+
+    req.userId = userId;
+
+    next();
+  } catch (error) {
+    next(error);
   }
-
-  req.userId = userId;
-
-  next();
 }
