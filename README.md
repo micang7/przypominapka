@@ -9,27 +9,35 @@ A full-stack mobile application designed to remind users of tasks based on speci
 
 ## Screenshots
 
-<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
-<img src="assets/Login_Screen.png" />
-<img src="assets/App_Home_Screen.png" />
-<img src="assets/Add_New_Time-Based_Task.png" />
-<img src="assets/Edit_Time-Based_Task.png" />
-<img src="assets/Add_New_Location-Based_Task.png" />
-<strong style="text-align: center;">Login Screen</strong>
-<strong style="text-align: center;">App Home Screen</strong>
-<strong style="text-align: center;">Add New Time-Based Task</strong>
-<strong style="text-align: center;">Edit Time-Based Task</strong>
-<strong style="text-align: center;">Add New Location-Based Task</strong>
-<img src="assets/Add_New_Location-Based_Task2.png" />
-<img src="assets/Deleting_a_Task.png" />
-<img src="assets/Notification.png" />
-<img src="assets/Side_menu.png" />
-<div></div>
-<strong style="text-align: center;">Add New Location-Based Task</strong>
-<strong style="text-align: center;">Deleting a Task</strong>
-<strong style="text-align: center;">Notification</strong>
-<strong style="text-align: center;">Side menu</strong>
-</div>
+<table>
+  <tr>
+    <td align="center"><img src="assets/Login_Screen.png" height="330" /></td>
+    <td align="center"><img src="assets/App_Home_Screen.png" height="330" /></td>
+    <td align="center"><img src="assets/Add_New_Time-Based_Task.png" height="330" /></td>
+    <td align="center"><img src="assets/Edit_Time-Based_Task.png" height="330" /></td>
+    <td align="center"><img src="assets/Add_New_Location-Based_Task.png" height="330" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Login Screen</strong></td>
+    <td align="center"><strong>App Home Screen</strong></td>
+    <td align="center"><strong>Add New Time-Based Task</strong></td>
+    <td align="center"><strong>Edit Time-Based Task</strong></td>
+    <td align="center"><strong>Add New Location-Based Task</strong></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/Add_New_Location-Based_Task2.png" height="330" /></td>
+    <td align="center"><img src="assets/Deleting_a_Task.png" height="330" /></td>
+    <td align="center"><img src="assets/Notification.png" height="330" /></td>
+    <td align="center"><img src="assets/Side_menu.png" height="330" /></td>
+    <td align="center"></td> </tr>
+  <tr>
+    <td align="center"><strong>Add New Location-Based Task</strong></td>
+    <td align="center"><strong>Deleting a Task</strong></td>
+    <td align="center"><strong>Notification</strong></td>
+    <td align="center"><strong>Side menu</strong></td>
+    <td></td>
+  </tr>
+</table>
 
 ## Features
 
