@@ -22,6 +22,10 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(1),
   JWT_EXPIRES_IN: z.custom<StringValue>(),
   JWT_REFRESH_EXPIRES_IN: z.custom<StringValue>(),
+  ALLOWED_ORIGINS: z
+    .string()
+    .min(1)
+    .transform((val) => val.split(',').map((origin) => origin.trim())),
 });
 
 const result = envSchema.safeParse(process.env);

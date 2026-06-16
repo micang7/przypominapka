@@ -17,12 +17,20 @@ import cors from 'cors';
 import { env } from './config/env.js';
 import rateLimit from 'express-rate-limit';
 import path from 'node:path';
+import helmet from 'helmet';
 
 export const app = express();
 
 app.set('trust proxy', 1);
 
-app.use(cors());
+app.use(helmet());
+
+app.use(
+  cors({
+    origin: env.ALLOWED_ORIGINS,
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 

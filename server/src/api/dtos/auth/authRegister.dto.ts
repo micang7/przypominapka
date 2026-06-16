@@ -6,7 +6,10 @@ export const AuthRegisterDto = z
     password: z.string().min(1).max(255).openapi({ example: 'password' }),
     confirmPassword: z
       .string()
-      .min(1)
+      .min(8)
+      .regex(/[A-Z]/, 'password_uppercase')
+      .regex(/[0-9]/, 'password_number')
+      .regex(/[^A-Za-z0-9]/, 'password_special')
       .max(255)
       .openapi({ example: 'password' }),
     deviceId: z.string().min(1),

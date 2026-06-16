@@ -9,7 +9,10 @@ export const AuthChangePasswordDto = z
       .openapi({ example: 'old-password' }),
     newPassword: z
       .string()
-      .min(1)
+      .min(8)
+      .regex(/[A-Z]/, 'password_uppercase')
+      .regex(/[0-9]/, 'password_number')
+      .regex(/[^A-Za-z0-9]/, 'password_special')
       .max(255)
       .openapi({ example: 'new-password' }),
     newConfirmPassword: z
