@@ -2,10 +2,9 @@ name: Server CI
 
 on:
   push:
-    branches:
-      - "feature/**"
-      - "bugfix/**"
-      - "hotfix/**"
+    branches-ignore:
+      - main
+      - develop
   pull_request:
     branches:
       - main
