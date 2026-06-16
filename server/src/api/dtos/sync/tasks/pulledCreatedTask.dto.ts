@@ -10,6 +10,7 @@ export const PulledCreatedTaskDto = z.object({
   geoTriggerLatitude: z.number().min(-90).max(90).nullish(),
   geoTriggerLongitude: z.number().min(-180).max(180).nullish(),
   geoTriggerRadius: z.number().int().positive().max(50000).nullish(),
+  version: z.number().int().positive(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

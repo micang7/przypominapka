@@ -42,7 +42,7 @@ class TaskRepositoryImpl implements ITaskRepository {
   Future<void> syncTasks() async {
     try {
       final lastSyncAtStr = await localDatasource.getMetadata('last_sync_at');
-      final lastSyncAt = lastSyncAtStr != null 
+      final lastSyncAt = lastSyncAtStr != null
           ? DateTime.parse(lastSyncAtStr).toUtc()
           : DateTime.fromMillisecondsSinceEpoch(0).toUtc();
 
@@ -75,15 +75,21 @@ class TaskRepositoryImpl implements ITaskRepository {
   }
 
   Future<void> _applyServerChanges(api.SyncChanges changes) async {
-    // 1. Upsert created and updated tasks
-    final toUpsert = [
-      ...changes.created.map(_apiDtoToEntry),
-      ...changes.updated.map(_apiDtoToEntry)
-    ];
+    // Łączymy paczki od serwera
+    final allIncomingDtos = [...changes.created, ...changes.updated];
 
-    if (toUpsert.isNotEmpty) {
-      await localDatasource.upsertTasks(toUpsert);
-      for (final dto in [...changes.created, ...changes.updated]) {
+    final List<TaskEntry> toUpsert = [];
+
+    for (final dto in allIncomingDtos) {
+      final existing = await localDatasource.getTaskById(dto.id);
+
+      // KONTROLA WSPÓŁBIEŻNOŚCI (OCC):
+      // Aktualizujemy lokalną bazę danych TYLKO wtedy, gdy zadanie nie istnieje lokalnie
+      // LUB gdy wersja nadesłana z serwera jest ściśle nowsza (większa) niż lokalna.
+      if (existing == null || dto.version > existing.version) {
+        toUpsert.add(_apiDtoToEntry(dto));
+
+        // Aktualizacja natywnych triggerów sprzętowych (geofencing/powiadomienia)
         _updateTaskTriggers(
           dto.id,
           dto.title,
@@ -94,7 +100,16 @@ class TaskRepositoryImpl implements ITaskRepository {
           dto.geoTriggerLongitude,
           dto.geoTriggerRadius?.toDouble(),
         );
+      } else {
+        dev.log(
+          'OCC: Zignorowano zmianę z serwera dla zadania ${dto.id}. Wersja lokalna (${existing.version}) jest nowsza lub równa serwerowej (${dto.version}).',
+          name: 'TaskRepository',
+        );
       }
+    }
+
+    if (toUpsert.isNotEmpty) {
+      await localDatasource.upsertTasks(toUpsert);
     }
 
     // 2. Handle server deletions
@@ -119,9 +134,14 @@ class TaskRepositoryImpl implements ITaskRepository {
 
   @override
   Future<void> updateTask(Task task) async {
-    final entry = _entityToEntry(task).copyWith(isPendingSync: true, updatedAt: DateTime.now());
+    // Lokalna modyfikacja użytkownika zwiększa wersję lokalną o 1 (Optimistic Locking)
+    final updatedTask = task.copyWith(
+      version: task.version + 1,
+      updatedAt: DateTime.now(),
+    );
+    final entry = _entityToEntry(updatedTask).copyWith(isPendingSync: true);
     await localDatasource.upsertTask(entry);
-    _updateTaskTriggersFromEntity(task);
+    _updateTaskTriggersFromEntity(updatedTask);
     unawaited(syncTasks());
   }
 
@@ -140,16 +160,22 @@ class TaskRepositoryImpl implements ITaskRepository {
   Future<void> toggleTaskCompletion(String id) async {
     final entry = await localDatasource.getTaskById(id);
     if (entry != null) {
-      final updated = entry.copyWith(completed: !entry.completed, isPendingSync: true, updatedAt: DateTime.now());
+      // Przełączenie wykonania również podbija lokalną wersję o 1
+      final updated = entry.copyWith(
+        completed: !entry.completed,
+        version: entry.version + 1,
+        isPendingSync: true,
+        updatedAt: DateTime.now(),
+      );
       await localDatasource.upsertTask(updated);
       _updateTaskTriggers(
-        updated.id, 
-        updated.title, 
-        updated.description, 
-        updated.completed, 
-        updated.timeTriggerAt, 
-        updated.geoTriggerLatitude, 
-        updated.geoTriggerLongitude, 
+        updated.id,
+        updated.title,
+        updated.description,
+        updated.completed,
+        updated.timeTriggerAt,
+        updated.geoTriggerLatitude,
+        updated.geoTriggerLongitude,
         updated.geoTriggerRadius?.toDouble()
       );
       unawaited(syncTasks());
@@ -175,13 +201,13 @@ class TaskRepositoryImpl implements ITaskRepository {
 
   void _updateTaskTriggersFromEntity(Task task) {
     _updateTaskTriggers(
-      task.id, 
-      task.title, 
-      task.description, 
-      task.completed, 
-      task.timeTriggerAt, 
-      task.geoTriggerLatitude, 
-      task.geoTriggerLongitude, 
+      task.id,
+      task.title,
+      task.description,
+      task.completed,
+      task.timeTriggerAt,
+      task.geoTriggerLatitude,
+      task.geoTriggerLongitude,
       task.geoTriggerRadius?.toDouble()
     );
   }
@@ -213,18 +239,73 @@ class TaskRepositoryImpl implements ITaskRepository {
 
   int _getNotificationId(String uuid) => uuid.hashCode.abs() % 2147483647;
 
-  Task _entryToEntity(TaskEntry entry) => Task(id: entry.id, title: entry.title, description: entry.description, type: entry.type == 'recurrent' ? TaskType.recurrent : TaskType.oneTime, completed: entry.completed, timeTriggerAt: entry.timeTriggerAt, geoTriggerLatitude: entry.geoTriggerLatitude, geoTriggerLongitude: entry.geoTriggerLongitude, geoTriggerRadius: entry.geoTriggerRadius, createdAt: entry.createdAt, updatedAt: entry.updatedAt);
-  TaskEntry _entityToEntry(Task entity) => TaskEntry(id: entity.id, title: entity.title, description: entity.description, type: entity.type == TaskType.recurrent ? 'recurrent' : 'one_time', completed: entity.completed, timeTriggerAt: entity.timeTriggerAt, geoTriggerLatitude: entity.geoTriggerLatitude, geoTriggerLongitude: entity.geoTriggerLongitude, geoTriggerRadius: entity.geoTriggerRadius, createdAt: entity.createdAt, updatedAt: entity.updatedAt, isPendingSync: false);
-  api.TaskDto _entryToApiDto(TaskEntry entry) => api.TaskDto(id: entry.id, title: entry.title, description: entry.description, type: entry.type, completed: entry.completed, timeTriggerAt: entry.timeTriggerAt?.toUtc(), geoTriggerLatitude: entry.geoTriggerLatitude, geoTriggerLongitude: entry.geoTriggerLongitude, geoTriggerRadius: entry.geoTriggerRadius, createdAt: entry.createdAt.toUtc(), updatedAt: entry.updatedAt.toUtc());
-  TaskEntry _apiDtoToEntry(api.TaskDto dto) => TaskEntry(id: dto.id, title: dto.title, description: dto.description, type: dto.type, completed: dto.completed, timeTriggerAt: dto.timeTriggerAt, geoTriggerLatitude: dto.geoTriggerLatitude, geoTriggerLongitude: dto.geoTriggerLongitude, geoTriggerRadius: dto.geoTriggerRadius, createdAt: dto.createdAt ?? DateTime.now(), updatedAt: dto.updatedAt ?? DateTime.now(), isPendingSync: false);
+  // FIX: Mapowania uwzględniające pole "version" w obiektach domenowych, DTO oraz encjach bazy danych Drift (TaskEntry)
+  Task _entryToEntity(TaskEntry entry) => Task(
+    id: entry.id,
+    title: entry.title,
+    description: entry.description,
+    type: entry.type == 'recurrent' ? TaskType.recurrent : TaskType.oneTime,
+    completed: entry.completed,
+    timeTriggerAt: entry.timeTriggerAt,
+    geoTriggerLatitude: entry.geoTriggerLatitude,
+    geoTriggerLongitude: entry.geoTriggerLongitude,
+    geoTriggerRadius: entry.geoTriggerRadius,
+    version: entry.version,
+    createdAt: entry.createdAt,
+    updatedAt: entry.updatedAt,
+  );
+  TaskEntry _entityToEntry(Task entity) => TaskEntry(
+    id: entity.id,
+    title: entity.title,
+    description: entity.description,
+    type: entity.type == TaskType.recurrent ? 'recurrent' : 'one_time',
+    completed: entity.completed,
+    timeTriggerAt: entity.timeTriggerAt,
+    geoTriggerLatitude: entity.geoTriggerLatitude,
+    geoTriggerLongitude: entity.geoTriggerLongitude,
+    geoTriggerRadius: entity.geoTriggerRadius,
+    version: entity.version,
+    createdAt: entity.createdAt,
+    updatedAt: entity.updatedAt,
+    isPendingSync: false,
+  );
+  api.TaskDto _entryToApiDto(TaskEntry entry) => api.TaskDto(
+    id: entry.id,
+    title: entry.title,
+    description: entry.description,
+    type: entry.type,
+    completed: entry.completed,
+    timeTriggerAt: entry.timeTriggerAt?.toUtc(),
+    geoTriggerLatitude: entry.geoTriggerLatitude,
+    geoTriggerLongitude: entry.geoTriggerLongitude,
+    geoTriggerRadius: entry.geoTriggerRadius,
+    version: entry.version,
+    createdAt: entry.createdAt.toUtc(),
+    updatedAt: entry.updatedAt.toUtc(),
+  );
+  TaskEntry _apiDtoToEntry(api.TaskDto dto) => TaskEntry(
+    id: dto.id,
+    title: dto.title,
+    description: dto.description,
+    type: dto.type,
+    completed: dto.completed,
+    timeTriggerAt: dto.timeTriggerAt,
+    geoTriggerLatitude: dto.geoTriggerLatitude,
+    geoTriggerLongitude: dto.geoTriggerLongitude,
+    geoTriggerRadius: dto.geoTriggerRadius,
+    version: dto.version,
+    createdAt: dto.createdAt ?? DateTime.now(),
+    updatedAt: dto.updatedAt ?? DateTime.now(),
+    isPendingSync: false,
+  );
 }
 
 @riverpod
 ITaskRepository taskRepository(Ref ref) => TaskRepositoryImpl(
-      localDatasource: ref.watch(taskLocalDatasourceProvider),
-      apiClient: ref.watch(apiClientProvider),
-      deviceService: ref.watch(deviceServiceProvider),
-      notificationService: ref.watch(notificationServiceProvider),
-      geofencingService: ref.watch(geofencingServiceProvider),
-      authLocalDatasource: ref.watch(authLocalDatasourceProvider),
-    );
+  localDatasource: ref.watch(taskLocalDatasourceProvider),
+  apiClient: ref.watch(apiClientProvider),
+  deviceService: ref.watch(deviceServiceProvider),
+  notificationService: ref.watch(notificationServiceProvider),
+  geofencingService: ref.watch(geofencingServiceProvider),
+  authLocalDatasource: ref.watch(authLocalDatasourceProvider),
+);

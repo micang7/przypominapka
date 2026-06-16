@@ -9,6 +9,7 @@ void main() {
         'title': 'Test Task',
         'type': 'one_time',
         'completed': true,
+        'version': 1,
         'createdAt': '2023-01-01T10:00:00.000Z',
         'updatedAt': '2023-01-01T11:00:00.000Z',
       };
@@ -19,6 +20,7 @@ void main() {
       expect(dto.title, 'Test Task');
       expect(dto.type, 'one_time');
       expect(dto.completed, true);
+      expect(dto.version, 1);
     });
 
     test('should correctly serialize to JSON', () {
@@ -27,6 +29,7 @@ void main() {
         title: 'Test Task',
         type: 'one_time',
         completed: false,
+        version: 1,
         createdAt: DateTime.parse('2023-01-01T10:00:00.000Z'),
         updatedAt: DateTime.parse('2023-01-01T11:00:00.000Z'),
       );
@@ -36,6 +39,7 @@ void main() {
       expect(json['id'], '1');
       expect(json['title'], 'Test Task');
       expect(json['completed'], false);
+      expect(json['version'], 1);
     });
   });
 
@@ -46,8 +50,13 @@ void main() {
         deviceId: 'device123',
         changes: const SyncChanges(
           created: [
-            TaskDto(id: '1', title: 'New', type: 'one_time')
-          ]
+            TaskDto(
+              id: '1', 
+              title: 'New', 
+              type: 'one_time',
+              version: 1,
+            )
+          ],
         ),
       );
 
@@ -55,6 +64,7 @@ void main() {
 
       expect(json['deviceId'], 'device123');
       expect(json['changes']['created'], isNotEmpty);
+      expect(json['changes']['created'][0]['version'], 1);
     });
   });
 }

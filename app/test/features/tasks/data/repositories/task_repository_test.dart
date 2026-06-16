@@ -87,6 +87,7 @@ void main() {
         id: '1',
         title: 'Test Task',
         type: TaskType.oneTime,
+        version: 1,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -109,7 +110,6 @@ void main() {
 
       // Assert
       verify(() => mockLocalDatasource.upsertTask(any())).called(1);
-      // verify(() => mockSyncNamespace.sync(any())).called(1); // unawaited might not have run yet
     });
 
     test('syncTasks should push local changes and apply server changes', () async {
@@ -119,6 +119,7 @@ void main() {
         title: 'Local Task',
         type: 'one_time',
         completed: false,
+        version: 1,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         isPendingSync: true,
@@ -134,6 +135,7 @@ void main() {
         id: '2',
         title: 'Server Task',
         type: 'one_time',
+        version: 1,
         updatedAt: DateTime.now(),
       );
 
@@ -162,6 +164,7 @@ void main() {
         title: 'Task to delete',
         type: 'one_time',
         completed: false,
+        version: 1,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         isPendingSync: false,
@@ -196,6 +199,7 @@ void main() {
         title: 'Task',
         type: 'one_time',
         completed: false,
+        version: 1,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         isPendingSync: false,
@@ -227,6 +231,7 @@ void main() {
       final task1 = TaskEntry(
         id: '1', title: 'T1', type: 'one_time', completed: false,
         timeTriggerAt: DateTime.now().add(const Duration(hours: 1)),
+        version: 1,
         createdAt: DateTime.now(), updatedAt: DateTime.now(), isPendingSync: false,
       );
       

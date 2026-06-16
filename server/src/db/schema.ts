@@ -62,6 +62,7 @@ export const tasks = pgTable(
     geoTriggerLatitude: doublePrecision('geo_trigger_latitude'),
     geoTriggerLongitude: doublePrecision('geo_trigger_longitude'),
     geoTriggerRadius: integer('geo_trigger_radius'),
+    version: integer('version').notNull().default(1),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

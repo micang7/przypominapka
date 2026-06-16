@@ -15,6 +15,7 @@ abstract class TaskDto with _$TaskDto {
     double? geoTriggerLatitude,
     double? geoTriggerLongitude,
     int? geoTriggerRadius,
+    required int version,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _TaskDto;
