@@ -10,6 +10,16 @@ jobs:
   acceptance-tests:
     runs-on: ubuntu-latest
 
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_URL: postgres://test:test@localhost:5432/test
+      JWT_SECRET: test
+      JWT_REFRESH_SECRET: test
+      JWT_EXPIRES_IN: "15m"
+      JWT_REFRESH_EXPIRES_IN: "1d"
+      ALLOWED_ORIGINS: http://localhost:5173
+
     services:
       postgres_test:
         image: postgres:16
@@ -38,18 +48,9 @@ jobs:
         run: cd server && npm ci
 
       - name: Run Database Migrations for Test DB
-        run: cd server && cross-env NODE_ENV=test npm run db:mg
+        run: cd server && NODE_ENV=test npm run db:mg
 
       - name: Start Backend Server in Background
-        env:
-          NODE_ENV: dev
-          PORT: 3000
-          DATABASE_URL: postgres://test:test@localhost:5432/test
-          JWT_SECRET: test
-          JWT_REFRESH_SECRET: test
-          JWT_EXPIRES_IN: "15m"
-          JWT_REFRESH_EXPIRES_IN: "1d"
-          ALLOWED_ORIGINS: http://localhost:5173
         run: cd server && npm run dev &
 
       - name: Wait for server to be responsive

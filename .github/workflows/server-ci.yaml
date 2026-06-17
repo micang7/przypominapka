@@ -39,6 +39,7 @@ jobs:
       JWT_REFRESH_SECRET: test
       JWT_EXPIRES_IN: "15m"
       JWT_REFRESH_EXPIRES_IN: "1d"
+      ALLOWED_ORIGINS: http://localhost:5173
 
     steps:
       - name: Checkout repository

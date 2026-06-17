@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import request from 'supertest';
 import { db } from '../../db/client.js';
 import { sessions, users } from '../../db/schema.js';
@@ -20,8 +20,8 @@ describe('Auth Module', () => {
     it('registers user successfully', async () => {
       const res = await api.post('/api/v1/auth/register').send({
         login: 'testuser',
-        password: 'password123',
-        confirmPassword: 'password123',
+        password: 'SecurePass123!',
+        confirmPassword: 'SecurePass123!',
         deviceId: 'device123',
         fcmToken: 'token123',
       });
@@ -40,8 +40,8 @@ describe('Auth Module', () => {
     it('fails when passwords do not match', async () => {
       const res = await api.post('/api/v1/auth/register').send({
         login: 'testuser',
-        password: 'password123',
-        confirmPassword: 'different',
+        password: 'SecurePass123!',
+        confirmPassword: 'DifferentPass123!',
         deviceId: 'device123',
         fcmToken: 'token123',
       });
@@ -55,16 +55,16 @@ describe('Auth Module', () => {
     it('fails when login is already in use', async () => {
       await api.post('/api/v1/auth/register').send({
         login: 'duplicate',
-        password: 'password123',
-        confirmPassword: 'password123',
+        password: 'SecurePass123!',
+        confirmPassword: 'SecurePass123!',
         deviceId: 'device123',
         fcmToken: 'token123',
       });
 
       const res = await api.post('/api/v1/auth/register').send({
         login: 'duplicate',
-        password: 'password123',
-        confirmPassword: 'password123',
+        password: 'SecurePass123!',
+        confirmPassword: 'SecurePass123!',
         deviceId: 'device123',
         fcmToken: 'token123',
       });
@@ -78,8 +78,8 @@ describe('Auth Module', () => {
     it('stores user in database', async () => {
       await api.post('/api/v1/auth/register').send({
         login: 'dbcheck',
-        password: 'password123',
-        confirmPassword: 'password123',
+        password: 'SecurePass123!',
+        confirmPassword: 'SecurePass123!',
         deviceId: 'device123',
         fcmToken: 'token123',
       });
@@ -89,7 +89,7 @@ describe('Auth Module', () => {
       expect(usersInDb.length).toBe(1);
       expect(usersInDb[0]!.login).toBe('dbcheck');
       expect(usersInDb[0]!.passwordHash).toBeDefined();
-      expect(usersInDb[0]!.passwordHash).not.toBe('password123');
+      expect(usersInDb[0]!.passwordHash).not.toBe('SecurePass123!');
     });
   });
 
@@ -97,7 +97,7 @@ describe('Auth Module', () => {
     let passwordHash: string;
 
     beforeAll(async () => {
-      passwordHash = await hash('password123');
+      passwordHash = await hash('SecurePass123!');
     });
 
     beforeEach(async () => {
@@ -110,7 +110,7 @@ describe('Auth Module', () => {
     it('logs in successfully', async () => {
       const res = await api.post('/api/v1/auth/login').send({
         login: 'testuser',
-        password: 'password123',
+        password: 'SecurePass123!',
         deviceId: 'device123',
         fcmToken: 'token123',
       });
@@ -129,7 +129,7 @@ describe('Auth Module', () => {
     it('fails when login does not exist', async () => {
       const res = await api.post('/api/v1/auth/login').send({
         login: 'unknown',
-        password: 'password123',
+        password: 'SecurePass123!',
         deviceId: 'device123',
         fcmToken: 'token123',
       });
@@ -142,7 +142,7 @@ describe('Auth Module', () => {
     it('fails when password is incorrect', async () => {
       const res = await api.post('/api/v1/auth/login').send({
         login: 'testuser',
-        password: 'wrongpassword',
+        password: 'WrongSecurePass123!',
         deviceId: 'device123',
         fcmToken: 'token123',
       });
@@ -171,11 +171,10 @@ describe('Auth Module', () => {
     let userId: number;
     let accessToken: string;
     let refreshToken: string;
-
     let passwordHash: string;
 
     beforeAll(async () => {
-      passwordHash = await hash('password123');
+      passwordHash = await hash('SecurePass123!');
     });
 
     beforeEach(async () => {
@@ -282,7 +281,7 @@ describe('Auth Module', () => {
     let passwordHash: string;
 
     beforeAll(async () => {
-      passwordHash = await hash('password123');
+      passwordHash = await hash('SecurePass123!');
     });
 
     beforeEach(async () => {
@@ -411,7 +410,7 @@ describe('Auth Module', () => {
     let passwordHash: string;
 
     beforeAll(async () => {
-      passwordHash = await hash('oldPassword123');
+      passwordHash = await hash('SecurePass123!');
     });
 
     beforeEach(async () => {
@@ -438,9 +437,9 @@ describe('Auth Module', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .set('x-refresh-token', refreshToken)
         .send({
-          oldPassword: 'oldPassword123',
-          newPassword: 'newPassword123',
-          newConfirmPassword: 'newPassword123',
+          oldPassword: 'SecurePass123!',
+          newPassword: 'NewSecurePass123!',
+          newConfirmPassword: 'NewSecurePass123!',
         });
 
       expect(res.status).toBe(204);
@@ -451,7 +450,7 @@ describe('Auth Module', () => {
         .where(eq(users.id, userId));
       const isNewPasswordValid = await verify(
         updatedUser!.passwordHash,
-        'newPassword123',
+        'NewSecurePass123!',
       );
       expect(isNewPasswordValid).toBe(true);
 
@@ -474,9 +473,9 @@ describe('Auth Module', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .set('x-refresh-token', refreshToken)
         .send({
-          oldPassword: 'wrongOldPassword',
-          newPassword: 'newPassword123',
-          newConfirmPassword: 'newPassword123',
+          oldPassword: 'WrongSecurePass123!',
+          newPassword: 'NewSecurePass123!',
+          newConfirmPassword: 'NewSecurePass123!',
         });
 
       expect(res.status).toBe(401);
@@ -488,7 +487,7 @@ describe('Auth Module', () => {
         .where(eq(users.id, userId));
       const isOldPasswordStillValid = await verify(
         userInDb!.passwordHash,
-        'oldPassword123',
+        'SecurePass123!',
       );
       expect(isOldPasswordStillValid).toBe(true);
     });

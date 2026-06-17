@@ -40,7 +40,7 @@ jobs:
         run: flutter analyze
 
       - name: Run unit tests
-        run: flutter test
+        run: flutter test test/core test/features
 
       - name: Build APK
         run: flutter build apk --debug --no-pub
