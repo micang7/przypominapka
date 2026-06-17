@@ -18,6 +18,7 @@ _TaskDto _$TaskDtoFromJson(Map<String, dynamic> json) => _TaskDto(
   geoTriggerLatitude: (json['geoTriggerLatitude'] as num?)?.toDouble(),
   geoTriggerLongitude: (json['geoTriggerLongitude'] as num?)?.toDouble(),
   geoTriggerRadius: (json['geoTriggerRadius'] as num?)?.toInt(),
+  version: (json['version'] as num).toInt(),
   createdAt: json['createdAt'] == null
       ? null
       : DateTime.parse(json['createdAt'] as String),
@@ -36,6 +37,7 @@ Map<String, dynamic> _$TaskDtoToJson(_TaskDto instance) => <String, dynamic>{
   'geoTriggerLatitude': instance.geoTriggerLatitude,
   'geoTriggerLongitude': instance.geoTriggerLongitude,
   'geoTriggerRadius': instance.geoTriggerRadius,
+  'version': instance.version,
   'createdAt': instance.createdAt?.toIso8601String(),
   'updatedAt': instance.updatedAt?.toIso8601String(),
 };

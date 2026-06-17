@@ -45,6 +45,7 @@ class _AddGeoTaskSheetState extends ConsumerState<AddGeoTaskSheet> {
         geoTriggerLatitude: widget.lat,
         geoTriggerLongitude: widget.lng,
         geoTriggerRadius: widget.radius.round(),
+        version: 1,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -52,14 +53,14 @@ class _AddGeoTaskSheetState extends ConsumerState<AddGeoTaskSheet> {
       try {
         // Dodajemy task i czekamy na dodanie do bazy
         await ref.read(taskRepositoryProvider).addTask(newTask);
-        
+
         // Refresh list po dodaniu - wymusza reload streamów
         ref.invalidate(allTasksProvider);
-        
+
         // Pop dialog
         if (mounted && context.mounted) {
           Navigator.pop(context, true);
-          
+
           // Pokaż success snackbar
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Zadanie regionalne zostało dodane')),

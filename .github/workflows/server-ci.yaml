@@ -2,10 +2,9 @@ name: Server CI
 
 on:
   push:
-    branches:
-      - "feature/**"
-      - "bugfix/**"
-      - "hotfix/**"
+    branches-ignore:
+      - main
+      - develop
   pull_request:
     branches:
       - main
@@ -40,6 +39,7 @@ jobs:
       JWT_REFRESH_SECRET: test
       JWT_EXPIRES_IN: "15m"
       JWT_REFRESH_EXPIRES_IN: "1d"
+      ALLOWED_ORIGINS: http://localhost:5173
 
     steps:
       - name: Checkout repository

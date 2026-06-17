@@ -66,6 +66,7 @@ describe('Sync Module', () => {
                 geoTriggerLatitude: null,
                 geoTriggerLongitude: null,
                 geoTriggerRadius: null,
+                version: 1,
               },
             ],
             updated: [],
@@ -91,6 +92,7 @@ describe('Sync Module', () => {
       });
       expect(taskInDb).toBeDefined();
       expect(taskInDb!.title).toBe('New Client Task');
+      expect(taskInDb!.version).toBe(1);
     });
 
     it('successfully soft deletes server task when client requests deletion', async () => {
@@ -102,6 +104,7 @@ describe('Sync Module', () => {
         userId: userId,
         title: 'Task to delete',
         type: 'one_time',
+        version: 1, // Dodane przy bezpośrednim insercie do bazy (choć default() też zadziała)
       });
 
       const res = await api
@@ -140,6 +143,7 @@ describe('Sync Module', () => {
         userId,
         title: 'Server Created Task',
         type: 'one_time',
+        version: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -150,6 +154,7 @@ describe('Sync Module', () => {
         userId,
         title: 'Server Updated Task',
         type: 'recurrent',
+        version: 2, // Przykładowo wyższa wersja po edycji na serwerze
         createdAt: new Date(Date.now() - 10000),
         updatedAt: new Date(),
       });
@@ -160,6 +165,7 @@ describe('Sync Module', () => {
         userId,
         title: 'Server Deleted Task',
         type: 'one_time',
+        version: 1,
         createdAt: new Date(Date.now() - 10000),
         updatedAt: new Date(),
         deletedAt: new Date(),
@@ -181,7 +187,7 @@ describe('Sync Module', () => {
 
       expect(created.length).toBe(1);
       expect(created[0].id).toBe(createdTaskId);
-      expect(created[0]).toHaveProperty('createdAt');
+      expect(created[0]).toHaveProperty('version');
 
       expect(updated.length).toBe(1);
       expect(updated[0].id).toBe(updatedTaskId);
@@ -243,6 +249,7 @@ describe('Sync Module', () => {
         userId,
         title: 'Existing Task',
         type: 'one_time',
+        version: 1,
       });
 
       const res = await api
@@ -261,6 +268,7 @@ describe('Sync Module', () => {
                 geoTriggerLatitude: null,
                 geoTriggerLongitude: null,
                 geoTriggerRadius: null,
+                version: 1, // Dodane w obiekcie zadania
               },
             ],
             updated: [],

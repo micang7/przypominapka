@@ -12,15 +12,22 @@ import 'package:app/features/tasks/domain/entities/task.dart';
 import 'package:app/core/database/database.dart';
 
 class MockTaskLocalDatasource extends Mock implements ITaskLocalDatasource {}
+
 class MockApiClient extends Mock implements ApiClient {}
+
 class MockSyncNamespace extends Mock implements SyncNamespace {}
+
 class MockDeviceService extends Mock implements DeviceService {}
+
 class MockNotificationService extends Mock implements NotificationService {}
+
 class MockGeofencingService extends Mock implements GeofencingService {}
+
 class MockAuthLocalDatasource extends Mock implements AuthLocalDatasource {}
 
 // Helper to register fallbacks for mocktail
 class FakeTaskEntry extends Fake implements TaskEntry {}
+
 class FakeSyncRequest extends Fake implements api.SyncRequest {}
 
 void initFallbackValues() {
@@ -52,23 +59,31 @@ void main() {
     mockAuthLocalDatasource = MockAuthLocalDatasource();
 
     when(() => mockApiClient.sync).thenReturn(mockSyncNamespace);
-    
+
     // Default stubbing for common void methods
-    when(() => mockNotificationService.cancelNotification(any())).thenAnswer((_) async {});
-    when(() => mockNotificationService.scheduleNotification(
-          id: any(named: 'id'),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-          scheduledDate: any(named: 'scheduledDate'),
-        )).thenAnswer((_) async {});
-    when(() => mockGeofencingService.registerGeofence(
-          id: any(named: 'id'),
-          title: any(named: 'title'),
-          lat: any(named: 'lat'),
-          lng: any(named: 'lng'),
-          radius: any(named: 'radius'),
-        )).thenAnswer((_) async {});
-    when(() => mockGeofencingService.removeGeofence(any(), any())).thenAnswer((_) async {});
+    when(
+      () => mockNotificationService.cancelNotification(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockNotificationService.scheduleNotification(
+        id: any(named: 'id'),
+        title: any(named: 'title'),
+        body: any(named: 'body'),
+        scheduledDate: any(named: 'scheduledDate'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockGeofencingService.registerGeofence(
+        id: any(named: 'id'),
+        title: any(named: 'title'),
+        lat: any(named: 'lat'),
+        lng: any(named: 'lng'),
+        radius: any(named: 'radius'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockGeofencingService.removeGeofence(any(), any()),
+    ).thenAnswer((_) async {});
 
     repository = TaskRepositoryImpl(
       localDatasource: mockLocalDatasource,
@@ -87,73 +102,123 @@ void main() {
         id: '1',
         title: 'Test Task',
         type: TaskType.oneTime,
+        version: 1,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
-      when(() => mockLocalDatasource.upsertTask(any())).thenAnswer((_) async {});
-      when(() => mockLocalDatasource.getMetadata(any())).thenAnswer((_) async => null);
-      when(() => mockLocalDatasource.setMetadata(any(), any())).thenAnswer((_) async {});
-      when(() => mockDeviceService.getDeviceId()).thenAnswer((_) async => 'device123');
-      when(() => mockAuthLocalDatasource.getAccessToken()).thenAnswer((_) async => 'token');
-      when(() => mockLocalDatasource.getPendingSyncTasks()).thenAnswer((_) async => []);
-      
+      when(
+        () => mockLocalDatasource.upsertTask(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockLocalDatasource.getMetadata(any()),
+      ).thenAnswer((_) async => null);
+      when(
+        () => mockLocalDatasource.setMetadata(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockDeviceService.getDeviceId(),
+      ).thenAnswer((_) async => 'device123');
+      when(
+        () => mockAuthLocalDatasource.getAccessToken(),
+      ).thenAnswer((_) async => 'token');
+      when(
+        () => mockLocalDatasource.getPendingSyncTasks(),
+      ).thenAnswer((_) async => []);
+
       final syncResponse = api.SyncResponse(
         syncAt: DateTime.now(),
         changes: const api.SyncChanges(),
       );
-      when(() => mockSyncNamespace.sync(any())).thenAnswer((_) async => syncResponse);
+      when(
+        () => mockSyncNamespace.sync(any()),
+      ).thenAnswer((_) async => syncResponse);
 
       // Act
       await repository.addTask(task);
 
       // Assert
       verify(() => mockLocalDatasource.upsertTask(any())).called(1);
-      // verify(() => mockSyncNamespace.sync(any())).called(1); // unawaited might not have run yet
     });
 
-    test('syncTasks should push local changes and apply server changes', () async {
-      // Arrange
-      final pendingTask = TaskEntry(
-        id: '1',
-        title: 'Local Task',
-        type: 'one_time',
-        completed: false,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        isPendingSync: true,
-      );
+    test(
+      'syncTasks should push local changes and apply server changes',
+      () async {
+        // Arrange
+        final pendingTask = TaskEntry(
+          id: '1',
+          title: 'Local Task',
+          type: 'one_time',
+          completed: false,
+          version: 1,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isPendingSync: true,
+        );
 
-      when(() => mockLocalDatasource.getMetadata(any())).thenAnswer((_) async => null);
-      when(() => mockLocalDatasource.setMetadata(any(), any())).thenAnswer((_) async {});
-      when(() => mockDeviceService.getDeviceId()).thenAnswer((_) async => 'device123');
-      when(() => mockAuthLocalDatasource.getAccessToken()).thenAnswer((_) async => 'token');
-      when(() => mockLocalDatasource.getPendingSyncTasks()).thenAnswer((_) async => [pendingTask]);
-      
-      final serverTask = api.TaskDto(
-        id: '2',
-        title: 'Server Task',
-        type: 'one_time',
-        updatedAt: DateTime.now(),
-      );
+        when(
+          () => mockLocalDatasource.getMetadata(any()),
+        ).thenAnswer((_) async => null);
+        when(
+          () => mockLocalDatasource.setMetadata(any(), any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockDeviceService.getDeviceId(),
+        ).thenAnswer((_) async => 'device123');
+        when(
+          () => mockAuthLocalDatasource.getAccessToken(),
+        ).thenAnswer((_) async => 'token');
+        when(
+          () => mockLocalDatasource.getPendingSyncTasks(),
+        ).thenAnswer((_) async => [pendingTask]);
 
-      final syncResponse = api.SyncResponse(
-        syncAt: DateTime.now(),
-        changes: api.SyncChanges(updated: [serverTask]),
-      );
+        // Zadanie na serwerze ma wyższą wersję (np. v2)
+        final serverTask = api.TaskDto(
+          id: '2',
+          title: 'Server Task Updated',
+          type: 'one_time',
+          version: 2, // Zwiększamy wersję na serwerze
+          updatedAt: DateTime.now().add(const Duration(minutes: 5)),
+        );
 
-      when(() => mockSyncNamespace.sync(any())).thenAnswer((_) async => syncResponse);
-      when(() => mockLocalDatasource.upsertTasks(any())).thenAnswer((_) async {});
-      when(() => mockLocalDatasource.markAsSynced(any())).thenAnswer((_) async {});
+        // Lokalna baza zwraca starszą wersję (v1)
+        when(() => mockLocalDatasource.getTaskById('2')).thenAnswer(
+          (_) async => TaskEntry(
+            id: '2',
+            title: 'Server Task Old',
+            type: 'one_time',
+            completed: false,
+            version: 1, // Starsza wersja lokalna
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            isPendingSync: false,
+          ),
+        );
 
-      // Act
-      await repository.syncTasks();
+        final syncResponse = api.SyncResponse(
+          syncAt: DateTime.now(),
+          changes: api.SyncChanges(updated: [serverTask]),
+        );
 
-      // Assert
-      verify(() => mockSyncNamespace.sync(any())).called(1);
-      verify(() => mockLocalDatasource.upsertTasks(any())).called(1);
-      verify(() => mockLocalDatasource.markAsSynced('1')).called(1);
-    });
+        when(
+          () => mockSyncNamespace.sync(any()),
+        ).thenAnswer((_) async => syncResponse);
+        when(
+          () => mockLocalDatasource.upsertTasks(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockLocalDatasource.markAsSynced(any()),
+        ).thenAnswer((_) async {});
+
+        // Act
+        await repository.syncTasks();
+
+        // Assert
+        verify(() => mockSyncNamespace.sync(any())).called(1);
+        verify(() => mockLocalDatasource.upsertTasks(any())).called(1);
+        verify(() => mockLocalDatasource.markAsSynced('1')).called(1);
+      },
+    );
 
     test('deleteTask should cancel triggers and delete locally', () async {
       // Arrange
@@ -162,30 +227,54 @@ void main() {
         title: 'Task to delete',
         type: 'one_time',
         completed: false,
+        version: 1,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         isPendingSync: false,
       );
 
-      when(() => mockLocalDatasource.getTaskById('1')).thenAnswer((_) async => entry);
-      when(() => mockNotificationService.cancelNotification(any())).thenAnswer((_) async {});
-      when(() => mockGeofencingService.removeGeofence(any(), any())).thenAnswer((_) async {});
+      when(
+        () => mockLocalDatasource.getTaskById('1'),
+      ).thenAnswer((_) async => entry);
+      when(
+        () => mockNotificationService.cancelNotification(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockGeofencingService.removeGeofence(any(), any()),
+      ).thenAnswer((_) async {});
       when(() => mockLocalDatasource.deleteTask('1')).thenAnswer((_) async {});
-      
+
       // Mock syncTasks internal calls
-      when(() => mockLocalDatasource.getMetadata(any())).thenAnswer((_) async => null);
-      when(() => mockLocalDatasource.setMetadata(any(), any())).thenAnswer((_) async {});
-      when(() => mockDeviceService.getDeviceId()).thenAnswer((_) async => 'device123');
-      when(() => mockAuthLocalDatasource.getAccessToken()).thenAnswer((_) async => 'token');
-      when(() => mockLocalDatasource.getPendingSyncTasks()).thenAnswer((_) async => []);
-      when(() => mockSyncNamespace.sync(any())).thenAnswer((_) async => api.SyncResponse(syncAt: DateTime.now(), changes: const api.SyncChanges()));
+      when(
+        () => mockLocalDatasource.getMetadata(any()),
+      ).thenAnswer((_) async => null);
+      when(
+        () => mockLocalDatasource.setMetadata(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockDeviceService.getDeviceId(),
+      ).thenAnswer((_) async => 'device123');
+      when(
+        () => mockAuthLocalDatasource.getAccessToken(),
+      ).thenAnswer((_) async => 'token');
+      when(
+        () => mockLocalDatasource.getPendingSyncTasks(),
+      ).thenAnswer((_) async => []);
+      when(() => mockSyncNamespace.sync(any())).thenAnswer(
+        (_) async => api.SyncResponse(
+          syncAt: DateTime.now(),
+          changes: const api.SyncChanges(),
+        ),
+      );
 
       // Act
       await repository.deleteTask('1');
 
       // Assert
       verify(() => mockNotificationService.cancelNotification(any())).called(1);
-      verify(() => mockGeofencingService.removeGeofence('1', 'Task to delete')).called(1);
+      verify(
+        () => mockGeofencingService.removeGeofence('1', 'Task to delete'),
+      ).called(1);
       verify(() => mockLocalDatasource.deleteTask('1')).called(1);
     });
 
@@ -196,52 +285,93 @@ void main() {
         title: 'Task',
         type: 'one_time',
         completed: false,
+        version: 1,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         isPendingSync: false,
       );
 
-      when(() => mockLocalDatasource.getTaskById('1')).thenAnswer((_) async => entry);
-      when(() => mockLocalDatasource.upsertTask(any())).thenAnswer((_) async {});
-      when(() => mockNotificationService.cancelNotification(any())).thenAnswer((_) async {});
-      when(() => mockGeofencingService.removeGeofence(any(), any())).thenAnswer((_) async {});
+      when(
+        () => mockLocalDatasource.getTaskById('1'),
+      ).thenAnswer((_) async => entry);
+      when(
+        () => mockLocalDatasource.upsertTask(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockNotificationService.cancelNotification(any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockGeofencingService.removeGeofence(any(), any()),
+      ).thenAnswer((_) async {});
 
       // Mock syncTasks internal calls
-      when(() => mockLocalDatasource.getMetadata(any())).thenAnswer((_) async => null);
-      when(() => mockLocalDatasource.setMetadata(any(), any())).thenAnswer((_) async {});
-      when(() => mockDeviceService.getDeviceId()).thenAnswer((_) async => 'device123');
-      when(() => mockAuthLocalDatasource.getAccessToken()).thenAnswer((_) async => 'token');
-      when(() => mockLocalDatasource.getPendingSyncTasks()).thenAnswer((_) async => []);
-      when(() => mockSyncNamespace.sync(any())).thenAnswer((_) async => api.SyncResponse(syncAt: DateTime.now(), changes: const api.SyncChanges()));
+      when(
+        () => mockLocalDatasource.getMetadata(any()),
+      ).thenAnswer((_) async => null);
+      when(
+        () => mockLocalDatasource.setMetadata(any(), any()),
+      ).thenAnswer((_) async {});
+      when(
+        () => mockDeviceService.getDeviceId(),
+      ).thenAnswer((_) async => 'device123');
+      when(
+        () => mockAuthLocalDatasource.getAccessToken(),
+      ).thenAnswer((_) async => 'token');
+      when(
+        () => mockLocalDatasource.getPendingSyncTasks(),
+      ).thenAnswer((_) async => []);
+      when(() => mockSyncNamespace.sync(any())).thenAnswer(
+        (_) async => api.SyncResponse(
+          syncAt: DateTime.now(),
+          changes: const api.SyncChanges(),
+        ),
+      );
 
       // Act
       await repository.toggleTaskCompletion('1');
 
       // Assert
-      verify(() => mockLocalDatasource.upsertTask(any(that: predicate<TaskEntry>((t) => t.completed == true)))).called(1);
+      verify(
+        () => mockLocalDatasource.upsertTask(
+          any(that: predicate<TaskEntry>((t) => t.completed == true)),
+        ),
+      ).called(1);
       verify(() => mockNotificationService.cancelNotification(any())).called(1);
     });
 
-    test('reinitializeTriggers should refresh triggers for all tasks', () async {
-      // Arrange
-      final task1 = TaskEntry(
-        id: '1', title: 'T1', type: 'one_time', completed: false,
-        timeTriggerAt: DateTime.now().add(const Duration(hours: 1)),
-        createdAt: DateTime.now(), updatedAt: DateTime.now(), isPendingSync: false,
-      );
-      
-      when(() => mockLocalDatasource.getAllTasks()).thenAnswer((_) async => [task1]);
+    test(
+      'reinitializeTriggers should refresh triggers for all tasks',
+      () async {
+        // Arrange
+        final task1 = TaskEntry(
+          id: '1',
+          title: 'T1',
+          type: 'one_time',
+          completed: false,
+          timeTriggerAt: DateTime.now().add(const Duration(hours: 1)),
+          version: 1,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          isPendingSync: false,
+        );
 
-      // Act
-      await repository.reinitializeTriggers();
+        when(
+          () => mockLocalDatasource.getAllTasks(),
+        ).thenAnswer((_) async => [task1]);
 
-      // Assert
-      verify(() => mockNotificationService.scheduleNotification(
-        id: any(named: 'id'),
-        title: any(named: 'title'),
-        body: any(named: 'body'),
-        scheduledDate: any(named: 'scheduledDate'),
-      )).called(1);
-    });
+        // Act
+        await repository.reinitializeTriggers();
+
+        // Assert
+        verify(
+          () => mockNotificationService.scheduleNotification(
+            id: any(named: 'id'),
+            title: any(named: 'title'),
+            body: any(named: 'body'),
+            scheduledDate: any(named: 'scheduledDate'),
+          ),
+        ).called(1);
+      },
+    );
   });
 }

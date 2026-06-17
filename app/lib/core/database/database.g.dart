@@ -110,6 +110,18 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskEntry> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -169,6 +181,7 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskEntry> {
     geoTriggerLatitude,
     geoTriggerLongitude,
     geoTriggerRadius,
+    version,
     createdAt,
     updatedAt,
     deletedAt,
@@ -258,6 +271,12 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskEntry> {
         ),
       );
     }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -334,6 +353,10 @@ class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskEntry> {
         DriftSqlType.int,
         data['${effectivePrefix}geo_trigger_radius'],
       ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -369,6 +392,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
   final double? geoTriggerLatitude;
   final double? geoTriggerLongitude;
   final int? geoTriggerRadius;
+  final int version;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
@@ -383,6 +407,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
     this.geoTriggerLatitude,
     this.geoTriggerLongitude,
     this.geoTriggerRadius,
+    required this.version,
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
@@ -410,6 +435,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
     if (!nullToAbsent || geoTriggerRadius != null) {
       map['geo_trigger_radius'] = Variable<int>(geoTriggerRadius);
     }
+    map['version'] = Variable<int>(version);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
@@ -440,6 +466,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
       geoTriggerRadius: geoTriggerRadius == null && nullToAbsent
           ? const Value.absent()
           : Value(geoTriggerRadius),
+      version: Value(version),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
@@ -468,6 +495,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
         json['geoTriggerLongitude'],
       ),
       geoTriggerRadius: serializer.fromJson<int?>(json['geoTriggerRadius']),
+      version: serializer.fromJson<int>(json['version']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
@@ -487,6 +515,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
       'geoTriggerLatitude': serializer.toJson<double?>(geoTriggerLatitude),
       'geoTriggerLongitude': serializer.toJson<double?>(geoTriggerLongitude),
       'geoTriggerRadius': serializer.toJson<int?>(geoTriggerRadius),
+      'version': serializer.toJson<int>(version),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
@@ -504,6 +533,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
     Value<double?> geoTriggerLatitude = const Value.absent(),
     Value<double?> geoTriggerLongitude = const Value.absent(),
     Value<int?> geoTriggerRadius = const Value.absent(),
+    int? version,
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
@@ -526,6 +556,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
     geoTriggerRadius: geoTriggerRadius.present
         ? geoTriggerRadius.value
         : this.geoTriggerRadius,
+    version: version ?? this.version,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
@@ -552,6 +583,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
       geoTriggerRadius: data.geoTriggerRadius.present
           ? data.geoTriggerRadius.value
           : this.geoTriggerRadius,
+      version: data.version.present ? data.version.value : this.version,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
@@ -573,6 +605,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
           ..write('geoTriggerLatitude: $geoTriggerLatitude, ')
           ..write('geoTriggerLongitude: $geoTriggerLongitude, ')
           ..write('geoTriggerRadius: $geoTriggerRadius, ')
+          ..write('version: $version, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
@@ -592,6 +625,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
     geoTriggerLatitude,
     geoTriggerLongitude,
     geoTriggerRadius,
+    version,
     createdAt,
     updatedAt,
     deletedAt,
@@ -610,6 +644,7 @@ class TaskEntry extends DataClass implements Insertable<TaskEntry> {
           other.geoTriggerLatitude == this.geoTriggerLatitude &&
           other.geoTriggerLongitude == this.geoTriggerLongitude &&
           other.geoTriggerRadius == this.geoTriggerRadius &&
+          other.version == this.version &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
@@ -626,6 +661,7 @@ class TasksCompanion extends UpdateCompanion<TaskEntry> {
   final Value<double?> geoTriggerLatitude;
   final Value<double?> geoTriggerLongitude;
   final Value<int?> geoTriggerRadius;
+  final Value<int> version;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
@@ -641,6 +677,7 @@ class TasksCompanion extends UpdateCompanion<TaskEntry> {
     this.geoTriggerLatitude = const Value.absent(),
     this.geoTriggerLongitude = const Value.absent(),
     this.geoTriggerRadius = const Value.absent(),
+    this.version = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
@@ -657,6 +694,7 @@ class TasksCompanion extends UpdateCompanion<TaskEntry> {
     this.geoTriggerLatitude = const Value.absent(),
     this.geoTriggerLongitude = const Value.absent(),
     this.geoTriggerRadius = const Value.absent(),
+    this.version = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
@@ -677,6 +715,7 @@ class TasksCompanion extends UpdateCompanion<TaskEntry> {
     Expression<double>? geoTriggerLatitude,
     Expression<double>? geoTriggerLongitude,
     Expression<int>? geoTriggerRadius,
+    Expression<int>? version,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
@@ -695,6 +734,7 @@ class TasksCompanion extends UpdateCompanion<TaskEntry> {
       if (geoTriggerLongitude != null)
         'geo_trigger_longitude': geoTriggerLongitude,
       if (geoTriggerRadius != null) 'geo_trigger_radius': geoTriggerRadius,
+      if (version != null) 'version': version,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
@@ -713,6 +753,7 @@ class TasksCompanion extends UpdateCompanion<TaskEntry> {
     Value<double?>? geoTriggerLatitude,
     Value<double?>? geoTriggerLongitude,
     Value<int?>? geoTriggerRadius,
+    Value<int>? version,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
@@ -729,6 +770,7 @@ class TasksCompanion extends UpdateCompanion<TaskEntry> {
       geoTriggerLatitude: geoTriggerLatitude ?? this.geoTriggerLatitude,
       geoTriggerLongitude: geoTriggerLongitude ?? this.geoTriggerLongitude,
       geoTriggerRadius: geoTriggerRadius ?? this.geoTriggerRadius,
+      version: version ?? this.version,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -769,6 +811,9 @@ class TasksCompanion extends UpdateCompanion<TaskEntry> {
     if (geoTriggerRadius.present) {
       map['geo_trigger_radius'] = Variable<int>(geoTriggerRadius.value);
     }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -799,6 +844,7 @@ class TasksCompanion extends UpdateCompanion<TaskEntry> {
           ..write('geoTriggerLatitude: $geoTriggerLatitude, ')
           ..write('geoTriggerLongitude: $geoTriggerLongitude, ')
           ..write('geoTriggerRadius: $geoTriggerRadius, ')
+          ..write('version: $version, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
@@ -1041,6 +1087,7 @@ typedef $$TasksTableCreateCompanionBuilder =
       Value<double?> geoTriggerLatitude,
       Value<double?> geoTriggerLongitude,
       Value<int?> geoTriggerRadius,
+      Value<int> version,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
@@ -1058,6 +1105,7 @@ typedef $$TasksTableUpdateCompanionBuilder =
       Value<double?> geoTriggerLatitude,
       Value<double?> geoTriggerLongitude,
       Value<int?> geoTriggerRadius,
+      Value<int> version,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
@@ -1115,6 +1163,11 @@ class $$TasksTableFilterComposer extends Composer<_$AppDatabase, $TasksTable> {
 
   ColumnFilters<int> get geoTriggerRadius => $composableBuilder(
     column: $table.geoTriggerRadius,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1193,6 +1246,11 @@ class $$TasksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -1260,6 +1318,9 @@ class $$TasksTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -1312,6 +1373,7 @@ class $$TasksTableTableManager
                 Value<double?> geoTriggerLatitude = const Value.absent(),
                 Value<double?> geoTriggerLongitude = const Value.absent(),
                 Value<int?> geoTriggerRadius = const Value.absent(),
+                Value<int> version = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -1327,6 +1389,7 @@ class $$TasksTableTableManager
                 geoTriggerLatitude: geoTriggerLatitude,
                 geoTriggerLongitude: geoTriggerLongitude,
                 geoTriggerRadius: geoTriggerRadius,
+                version: version,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
@@ -1344,6 +1407,7 @@ class $$TasksTableTableManager
                 Value<double?> geoTriggerLatitude = const Value.absent(),
                 Value<double?> geoTriggerLongitude = const Value.absent(),
                 Value<int?> geoTriggerRadius = const Value.absent(),
+                Value<int> version = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -1359,6 +1423,7 @@ class $$TasksTableTableManager
                 geoTriggerLatitude: geoTriggerLatitude,
                 geoTriggerLongitude: geoTriggerLongitude,
                 geoTriggerRadius: geoTriggerRadius,
+                version: version,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,

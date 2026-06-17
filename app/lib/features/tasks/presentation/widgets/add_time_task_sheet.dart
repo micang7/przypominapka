@@ -71,6 +71,7 @@ class _AddTimeTaskSheetState extends ConsumerState<AddTimeTaskSheet> {
         type: TaskType.oneTime,
         completed: false,
         timeTriggerAt: scheduledAt,
+        version: 1,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );

@@ -59,6 +59,7 @@ class SyncService {
           geoTriggerLatitude: task.geoTriggerLatitude,
           geoTriggerLongitude: task.geoTriggerLongitude,
           geoTriggerRadius: task.geoTriggerRadius,
+          version: 1,
           createdAt: syncAt,
           updatedAt: syncAt,
         }));
@@ -72,40 +73,69 @@ class SyncService {
           { userId, count: changes.updated.length },
           'Processing client updated tasks',
         );
-        const tasksToUpdate = changes.updated.map((task) => ({
-          id: task.id,
-          userId: userId,
-          title: task.title || '',
-          description: task.description,
-          type: task.type,
-          completed: false,
-          timeTriggerAt: task.timeTriggerAt
-            ? new Date(task.timeTriggerAt)
-            : null,
-          geoTriggerLatitude: task.geoTriggerLatitude,
-          geoTriggerLongitude: task.geoTriggerLongitude,
-          geoTriggerRadius: task.geoTriggerRadius,
-          createdAt: syncAt,
-          updatedAt: syncAt,
-        }));
 
-        await tx
-          .insert(tasks)
-          .values(tasksToUpdate)
-          .onConflictDoUpdate({
-            target: tasks.id,
-            set: {
-              title: sql`excluded.title`,
-              description: sql`excluded.description`,
-              type: sql`excluded.type`,
-              completed: sql`excluded.completed`,
-              timeTriggerAt: sql`excluded.time_trigger_at`,
-              geoTriggerLatitude: sql`excluded.geo_trigger_latitude`,
-              geoTriggerLongitude: sql`excluded.geo_trigger_longitude`,
-              geoTriggerRadius: sql`excluded.geo_trigger_radius`,
-              updatedAt: sql`excluded.updated_at`,
-            },
-          });
+        for (const task of changes.updated) {
+          // Pobieramy obecny rekord z bazy danych, aby sprawdzić jego wersję
+          const [existingTask] = await tx
+            .select({ version: tasks.version })
+            .from(tasks)
+            .where(and(eq(tasks.id, task.id), eq(tasks.userId, userId)));
+
+          // OCC: Aktualizujemy tylko wtedy, gdy zadanie nie istnieje na serwerze
+          // LUB gdy wersja nadesłana z klienta (task.version) jest równe lub wyższa niż ta na serwerze.
+          // Zapobiega to nadpisaniu nowszych zmian z serwera starszym stanem offline z klienta.
+          if (!existingTask || task.version >= existingTask.version) {
+            const nextVersion = existingTask ? existingTask.version + 1 : 1;
+
+            await tx
+              .insert(tasks)
+              .values({
+                id: task.id,
+                userId: userId,
+                title: task.title || '',
+                description: task.description,
+                type: task.type,
+                completed: task.completed ?? false,
+                timeTriggerAt: task.timeTriggerAt
+                  ? new Date(task.timeTriggerAt)
+                  : null,
+                geoTriggerLatitude: task.geoTriggerLatitude,
+                geoTriggerLongitude: task.geoTriggerLongitude,
+                geoTriggerRadius: task.geoTriggerRadius,
+                version: nextVersion,
+                createdAt: syncAt,
+                updatedAt: syncAt,
+              })
+              .onConflictDoUpdate({
+                target: tasks.id,
+                set: {
+                  title: sql`excluded.title`,
+                  description: sql`excluded.description`,
+                  type: sql`excluded.type`,
+                  completed: sql`excluded.completed`,
+                  timeTriggerAt: sql`excluded.time_trigger_at`,
+                  geoTriggerLatitude: sql`excluded.geo_trigger_latitude`,
+                  geoTriggerLongitude: sql`excluded.geo_trigger_longitude`,
+                  geoTriggerRadius: sql`excluded.geo_trigger_radius`,
+                  version: nextVersion,
+                  updatedAt: sql`excluded.updated_at`,
+                },
+              });
+          } else {
+            appLogger.warn(
+              {
+                taskId: task.id,
+                clientVersion: task.version,
+                serverVersion: existingTask.version,
+              },
+              'Conflict detected: Client sent outdated version. Server update rejected.',
+            );
+            // Wykluczamy to ID z przetworzonych pól (processedIds), dzięki czemu serwer
+            // w kroku 2 odeśle nowszą wersję zadania z powrotem do klienta (Server Wins)
+            const idx = processedIds.indexOf(task.id);
+            if (idx > -1) processedIds.splice(idx, 1);
+          }
+        }
       }
 
       // C. DELETED (Zadania usunięte na kliencie)
@@ -117,7 +147,10 @@ class SyncService {
 
         await tx
           .update(tasks)
-          .set({ deletedAt: syncAt })
+          .set({
+            deletedAt: syncAt,
+            version: sql`${tasks.version} + 1`,
+          })
           .where(
             and(inArray(tasks.id, clientDeletedIds), eq(tasks.userId, userId)),
           );
@@ -127,8 +160,6 @@ class SyncService {
     // 2. Pobieranie zmian z serwera, o których klient jeszcze nie wie
     const lastSyncDate = new Date(last_sync_at);
 
-    // A. Serwerowe CREATED & UPDATED
-    // Pobieramy rekordy zmodyfikowane/utworzone po `last_sync_at`, wykluczając ID przetworzone wyżej
     const serverChanges = await db
       .select()
       .from(tasks)
@@ -168,6 +199,7 @@ class SyncService {
           ? Number(task.geoTriggerLongitude)
           : null,
         geoTriggerRadius: task.geoTriggerRadius,
+        version: task.version,
         updatedAt: task.updatedAt.toISOString(),
       };
 

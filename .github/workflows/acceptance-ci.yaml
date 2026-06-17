@@ -1,0 +1,74 @@
+name: Acceptance Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  acceptance-tests:
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_URL: postgres://test:test@localhost:5432/test
+      JWT_SECRET: test
+      JWT_REFRESH_SECRET: test
+      JWT_EXPIRES_IN: "15m"
+      JWT_REFRESH_EXPIRES_IN: "1d"
+      ALLOWED_ORIGINS: http://localhost:5173
+
+    services:
+      postgres_test:
+        image: postgres:16
+        env:
+          POSTGRES_DB: test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-size: 20
+
+      - name: Install backend dependencies
+        run: cd server && npm ci
+
+      - name: Run Database Migrations for Test DB
+        run: cd server && NODE_ENV=test npm run db:mg
+
+      - name: Start Backend Server in Background
+        run: cd server && npm run dev &
+
+      - name: Wait for server to be responsive
+        run: npx wait-on http://localhost:3000/health/ready --timeout 30000
+
+      - name: Setup Java (wymagane przez Fluttera w CI)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      - name: Install Frontend Dependencies
+        run: cd app && flutter pub get
+
+      - name: Run Acceptance Tests
+        run: cd app && flutter test test/acceptance_test.dart
