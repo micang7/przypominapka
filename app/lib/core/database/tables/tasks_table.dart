@@ -7,12 +7,14 @@ class Tasks extends Table {
   TextColumn get description => text().nullable()();
   TextColumn get type => text()(); // one_time, recurrent
   BoolColumn get completed => boolean().withDefault(const Constant(false))();
-  
+
   DateTimeColumn get timeTriggerAt => dateTime().nullable()();
   RealColumn get geoTriggerLatitude => real().nullable()();
   RealColumn get geoTriggerLongitude => real().nullable()();
   IntColumn get geoTriggerRadius => integer().nullable()();
-  
+
+  IntColumn get version => integer().withDefault(const Constant(1))();
+
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get deletedAt => dateTime().nullable()();

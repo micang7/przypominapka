@@ -23,6 +23,7 @@ void main() {
       title: 'Database Task',
       type: 'one_time',
       completed: false,
+      version: 1,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isPendingSync: true,
@@ -33,6 +34,7 @@ void main() {
     final saved = await datasource.getTaskById('1');
     expect(saved, isNotNull);
     expect(saved!.title, 'Database Task');
+    expect(saved.version, 1);
   });
 
   test('getAllTasks should return non-deleted tasks', () async {
@@ -41,6 +43,7 @@ void main() {
       title: 'T1',
       type: 'one_time',
       completed: false,
+      version: 1,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isPendingSync: false,
@@ -50,6 +53,7 @@ void main() {
       title: 'T2',
       type: 'one_time',
       completed: false,
+      version: 1,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       isPendingSync: false,

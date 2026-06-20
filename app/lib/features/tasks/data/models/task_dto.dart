@@ -14,6 +14,7 @@ class TaskDto {
   final double? geoTriggerLatitude;
   final double? geoTriggerLongitude;
   final int? geoTriggerRadius;
+  final int version;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -27,6 +28,7 @@ class TaskDto {
     this.geoTriggerLatitude,
     this.geoTriggerLongitude,
     this.geoTriggerRadius,
+    required this.version,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -46,6 +48,7 @@ class TaskDto {
       geoTriggerLatitude: geoTriggerLatitude,
       geoTriggerLongitude: geoTriggerLongitude,
       geoTriggerRadius: geoTriggerRadius,
+      version: version,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -62,6 +65,7 @@ class TaskDto {
       geoTriggerLatitude: task.geoTriggerLatitude,
       geoTriggerLongitude: task.geoTriggerLongitude,
       geoTriggerRadius: task.geoTriggerRadius,
+      version: task.version,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
     );

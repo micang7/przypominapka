@@ -2,10 +2,9 @@ name: App CI
 
 on:
   push:
-    branches:
-      - "feature/**"
-      - "bugfix/**"
-      - "hotfix/**"
+    branches-ignore:
+      - main
+      - develop
   pull_request:
     branches:
       - main
@@ -41,7 +40,7 @@ jobs:
         run: flutter analyze
 
       - name: Run unit tests
-        run: flutter test
+        run: flutter test test/core test/features
 
       - name: Build APK
         run: flutter build apk --debug --no-pub

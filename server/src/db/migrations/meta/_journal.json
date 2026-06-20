@@ -6,14 +6,21 @@
       "idx": 0,
       "version": "7",
       "when": 1779103863494,
-      "tag": "0000_bizarre_nemesis",
+      "tag": "0000_init_schema",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
       "when": 1780775447064,
-      "tag": "0001_cool_hellfire_club",
+      "tag": "0001_add_device_id_and_fcm_token_to_sessions",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781684662354,
+      "tag": "0002_add_version_to_tasks",
       "breakpoints": true
     }
   ]

@@ -36,7 +36,7 @@ void main() {
   test('allTasksProvider should stream from repository', () async {
     final now = DateTime.now();
     final tasks = [
-      Task(id: '1', title: 'T1', type: TaskType.oneTime, completed: false, createdAt: now, updatedAt: now)
+      Task(id: '1', title: 'T1', type: TaskType.oneTime, completed: false, version: 1, createdAt: now, updatedAt: now)
     ];
     when(() => mockRepository.watchTasks()).thenAnswer((_) => Stream.value(tasks));
 
@@ -51,8 +51,8 @@ void main() {
   test('filteredTasksProvider filters by title and description', () async {
     final now = DateTime.now();
     final tasks = [
-      Task(id: '1', title: 'Apple', description: 'Red fruit', type: TaskType.oneTime, completed: false, createdAt: now, updatedAt: now),
-      Task(id: '2', title: 'Banana', description: 'Yellow fruit', type: TaskType.oneTime, completed: false, createdAt: now, updatedAt: now),
+      Task(id: '1', title: 'Apple', description: 'Red fruit', type: TaskType.oneTime, completed: false, version: 1, createdAt: now, updatedAt: now),
+      Task(id: '2', title: 'Banana', description: 'Yellow fruit', type: TaskType.oneTime, completed: false, version: 1, createdAt: now, updatedAt: now),
     ];
     
     when(() => mockRepository.watchTasks()).thenAnswer((_) => Stream.value(tasks));
@@ -78,9 +78,9 @@ void main() {
   test('timeTasks, geoTasks, completedTasks providers sort tasks correctly', () async {
     final now = DateTime.now();
     final tasks = [
-      Task(id: '1', title: 'Time', type: TaskType.oneTime, completed: false, timeTriggerAt: now, createdAt: now, updatedAt: now),
-      Task(id: '2', title: 'Geo', type: TaskType.oneTime, completed: false, geoTriggerLatitude: 50, geoTriggerLongitude: 50, geoTriggerRadius: 100, createdAt: now, updatedAt: now),
-      Task(id: '3', title: 'Done', type: TaskType.oneTime, completed: true, createdAt: now, updatedAt: now),
+      Task(id: '1', title: 'Time', type: TaskType.oneTime, completed: false, version: 1, timeTriggerAt: now, createdAt: now, updatedAt: now),
+      Task(id: '2', title: 'Geo', type: TaskType.oneTime, completed: false, version: 1, geoTriggerLatitude: 50, geoTriggerLongitude: 50, geoTriggerRadius: 100, createdAt: now, updatedAt: now),
+      Task(id: '3', title: 'Done', type: TaskType.oneTime, completed: true, version: 1, createdAt: now, updatedAt: now),
     ];
     
     when(() => mockRepository.watchTasks()).thenAnswer((_) => Stream.value(tasks));

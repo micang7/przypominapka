@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   doublePrecision,
@@ -61,6 +62,7 @@ export const tasks = pgTable(
     geoTriggerLatitude: doublePrecision('geo_trigger_latitude'),
     geoTriggerLongitude: doublePrecision('geo_trigger_longitude'),
     geoTriggerRadius: integer('geo_trigger_radius'),
+    version: integer('version').notNull().default(1),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -72,5 +74,10 @@ export const tasks = pgTable(
   (table) => [
     index('user_idx').on(table.userId),
     index('deleted_at_idx').on(table.deletedAt),
+    {
+      latitudeCheck: sql`check (${table.geoTriggerLatitude} >= -90.0 and ${table.geoTriggerLatitude} <= 90.0)`,
+      longitudeCheck: sql`check (${table.geoTriggerLongitude} >= -180.0 and ${table.geoTriggerLongitude} <= 180.0)`,
+      radiusCheck: sql`check (${table.geoTriggerRadius} > 0 and ${table.geoTriggerRadius} <= 50000)`,
+    },
   ],
 );

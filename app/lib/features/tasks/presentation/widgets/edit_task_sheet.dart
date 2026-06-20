@@ -99,6 +99,7 @@ class _EditTaskSheetState extends ConsumerState<EditTaskSheet> {
         geoTriggerLatitude: widget.task.geoTriggerLatitude,
         geoTriggerLongitude: widget.task.geoTriggerLongitude,
         geoTriggerRadius: widget.task.isGeoBased ? _radius.round() : widget.task.geoTriggerRadius,
+        version: widget.task.version,
         createdAt: widget.task.createdAt,
         updatedAt: DateTime.now(),
       );

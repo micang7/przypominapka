@@ -1,0 +1,15 @@
+name: Server CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Render Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render Deploy Hook
+        run: curl -fX POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
